@@ -1,0 +1,42 @@
+/* ==========================================================================
+   signature.css — DERYA startup signature
+   The overlay is display:none unless the head script adds html.intro-on, so a
+   failed script can never trap a visitor behind it.
+   ========================================================================== */
+.derya-intro { position: fixed; inset: 0; z-index: 60; display: none; overflow: hidden; }
+html.intro-on .derya-intro { display: block; }
+
+/* Curtains carry the background so they can part like a camera iris on exit */
+.di-curtain { position: absolute; left: 0; right: 0; height: 50.2%; background: var(--ink-0); z-index: 0;
+  transition: transform .8s cubic-bezier(.76, 0, .24, 1) .25s; will-change: transform; }
+.di-curtain-top { top: 0; background: radial-gradient(120% 140% at 50% 100%, #15110a 0%, var(--ink-0) 62%); border-bottom: 1px solid rgba(236, 217, 168, .55); box-shadow: 0 1px 24px rgba(205, 170, 107, .35); }
+.di-curtain-bottom { bottom: 0; background: radial-gradient(120% 140% at 50% 0%, #15110a 0%, var(--ink-0) 62%); border-top: 1px solid rgba(236, 217, 168, .55); box-shadow: 0 -1px 24px rgba(205, 170, 107, .35); }
+
+.di-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; transition: opacity .5s ease; }
+.di-stage { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(14px, 3.2vh, 28px); padding: 0 6vw; transition: opacity .55s ease .05s, transform .9s var(--ease), filter .55s ease; }
+.di-sig { width: min(80vw, 840px); height: auto; overflow: visible; }
+
+.di-letter use { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.di-tag { margin: 0; font: 700 clamp(8px, 1.45vw, 11px) Manrope, sans-serif; letter-spacing: .34em; color: var(--gold-300);
+  text-align: center; opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s var(--ease); }
+.di-tag.on { opacity: .92; transform: none; }
+
+.di-skip { position: absolute; z-index: 3; left: 50%; bottom: max(28px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+  min-height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--glass-line); background: var(--glass);
+  color: var(--gold-200); font: 600 11px Manrope, sans-serif; letter-spacing: .18em; text-transform: uppercase; cursor: pointer;
+  opacity: 0; animation: diSkipIn .6s ease .5s forwards; }
+.di-skip:hover { background: var(--glass-2); border-color: rgba(236, 217, 168, .5); }
+@keyframes diSkipIn { to { opacity: .9; } }
+
+/* Exit: signature recedes, curtains part around a gold seam */
+.derya-intro.is-leaving { pointer-events: none; }
+.derya-intro.is-leaving .di-stage { opacity: 0; transform: scale(1.07); filter: blur(5px); }
+.derya-intro.is-leaving .di-canvas { opacity: 0; }
+.derya-intro.is-leaving .di-skip { opacity: 0; animation: none; transition: opacity .2s; }
+.derya-intro.is-leaving .di-curtain-top { transform: translateY(-101%); }
+.derya-intro.is-leaving .di-curtain-bottom { transform: translateY(101%); }
+.derya-intro.is-fast .di-curtain { transition-duration: .45s; transition-delay: 0s; }
+.derya-intro.is-fast .di-stage { transition-duration: .3s; }
+
+@media (prefers-reduced-motion: reduce) { .derya-intro { display: none !important; } }
