@@ -46,7 +46,8 @@
     var x = 0;
     var y = 0;
     var paint = function () {
-      glow.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate3d(-50%,-50%,0)';
+      glow.style.setProperty('--cursor-x', x + 'px');
+      glow.style.setProperty('--cursor-y', y + 'px');
       frame = 0;
     };
     document.addEventListener('pointermove', function (event) {
