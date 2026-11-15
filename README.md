@@ -47,3 +47,22 @@ Do not present these pending features as operational until integrated and tested
 - Instagram: https://instagram.com/Derya_Capital
 - Facebook: https://www.facebook.com/profile.php?id=61595421795326
 - TikTok: https://www.tiktok.com/@derya_capital444
+
+## Cinematic enhancement layer
+
+Added on branch `claude/cinematic-frontend-polish` on top of the foundation. `styles.css` and `app.js` are unchanged; the layer lives in two extra files loaded after them, so removing the `cinematic.css` link and `cinematic.js` script tag returns the exact foundation look.
+
+- `cinematic.css` — motion, portrait presentation, header, responsive and accessibility refinements
+- `cinematic.js` — optional behaviour (intro skip, headline line reveal, portrait parallax, active nav, scroll progress, menu accessibility)
+
+What it adds:
+
+- Intro curtain wipe that plays once per session; click or Esc skips it
+- Hero sequence: headline lines rise from a mask, then the supporting copy settles in
+- Portrait: viewfinder corner marks, slow light sweep, pointer-driven depth parallax (mouse/trackpad only), 4:5 aspect ratio that scales at every width, caption aligned to the frame
+- Sticky header that tightens on scroll, active-section highlight, scroll progress line
+- Featured project spans the grid on wide screens
+- Fixes: 200px hidden horizontal overflow, caption colliding with the portrait frame, infinite animations looping at 0.01ms under reduced motion, intro ignoring reduced motion
+- Accessibility: skip link, visible keyboard focus, `aria-expanded` on the menu button, Esc and outside-click to close the menu, 44px menu touch target, higher-contrast micro text
+
+The portrait is still not included. Add the approved photo at `assets/yared-portrait.jpg` (4:5 works best); the placeholder disappears automatically once it loads.

@@ -1,0 +1,283 @@
+/* ==========================================================================
+   cinematic.css — enhancement layer
+   Loaded AFTER styles.css. It never edits the foundation rules; it only
+   refines them (same selectors, later in source order) and adds new ones.
+   Delete this file and its <link> to return to the foundation look exactly.
+   ========================================================================== */
+
+:root {
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --t0: 2s;               /* when the hero sequence starts (after the intro) */
+  --muted-2: #8c8c90;     /* higher-contrast replacement for #777 micro text */
+  color-scheme: dark;
+}
+html.intro-seen,
+html.intro-skip { --t0: .1s; }
+
+html { scroll-padding-top: 84px; }
+::selection { background: rgba(201, 168, 106, .35); color: #fff; }
+a, button { -webkit-tap-highlight-color: transparent; }
+main:focus { outline: none; }
+
+:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ---------- Accessibility: skip link ---------- */
+.skip-link {
+  position: absolute; left: 16px; top: -64px; z-index: 50;
+  padding: 10px 16px; border-radius: 3px;
+  background: var(--gold); color: #17130c;
+  font-size: 13px; font-weight: 700;
+  transition: top .2s;
+}
+.skip-link:focus { top: 12px; }
+
+/* ---------- Fix: ambient glows caused 200px of horizontal overflow ---------- */
+.ambient { position: fixed; }
+.ambient-one { top: 80px; right: -200px; }
+.ambient-two { top: auto; bottom: -180px; left: -250px; }
+
+/* ---------- Film grain (static, very light) ---------- */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 15;
+  pointer-events: none; opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Intro: curtain wipe instead of a plain fade ---------- */
+.intro-screen { animation: introCurtain .9s cubic-bezier(.76, 0, .24, 1) 1.7s forwards; cursor: pointer; }
+.intro-mark { animation: markIn 1.1s var(--ease) both; }
+.intro-caption { animation: captionIn 1s ease .45s both; }
+html.intro-seen .intro-screen,
+html.intro-skip .intro-screen { display: none; }
+
+@keyframes introCurtain {
+  from { clip-path: inset(0 0 0 0); }
+  to   { clip-path: inset(0 0 100% 0); visibility: hidden; }
+}
+@keyframes markIn {
+  from { opacity: 0; filter: blur(14px); transform: scale(.9); }
+  to   { opacity: 1; filter: blur(0);    transform: none; }
+}
+@keyframes captionIn {
+  from { opacity: 0; letter-spacing: 7px; }
+  to   { opacity: 1; letter-spacing: 2px; }
+}
+
+/* ---------- Header: sticky, tightens on scroll, active section ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  transition: height .3s var(--ease), background .3s, border-color .3s;
+}
+html.is-scrolled .topbar {
+  height: 68px;
+  background: rgba(8, 9, 11, .88);
+  border-bottom-color: var(--line);
+}
+nav a { position: relative; }
+nav a:after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -9px; height: 1px;
+  background: var(--gold);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .35s var(--ease);
+}
+nav a:hover:after,
+nav a.is-active:after { transform: scaleX(1); }
+nav a.is-active { color: var(--gold2); }
+.nav-cta:hover { border-color: rgba(240, 215, 160, .5); color: var(--gold2); }
+
+.menu-toggle { width: 44px; height: 44px; padding: 0; line-height: 1; cursor: pointer; }
+.menu-toggle[aria-expanded="true"] { font-size: 0; }
+.menu-toggle[aria-expanded="true"]:after { content: "\2715"; font-size: 20px; }
+nav.open { animation: navIn .3s var(--ease); }
+@keyframes navIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+.scroll-progress {
+  position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 30;
+  pointer-events: none;
+  transform-origin: left; transform: scaleX(var(--p, 0));
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  isolation: isolate;
+  overflow-x: clip;       /* rotating orbits must never create sideways scroll */
+  min-height: max(690px, calc(100svh - 86px));
+}
+.hero:before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 70% at 78% 45%, rgba(201, 168, 106, .13), transparent 70%),
+    radial-gradient(40% 50% at 8% 100%, rgba(102, 80, 139, .10), transparent 70%);
+}
+.hero h1 { text-wrap: balance; }
+
+/* One orchestrated sequence: headline lines rise out of a mask, then the rest settles in. */
+.hero h1 .line { display: block; overflow: hidden; padding-bottom: .1em; margin-bottom: -.1em; }
+.hero h1 .line-in {
+  display: block;
+  animation: lineUp 1.05s var(--ease) both;
+  animation-delay: calc(var(--t0) + var(--l, 0) * .11s);
+}
+@keyframes lineUp { from { transform: translateY(108%); } to { transform: none; } }
+
+.hero-copy > :not(h1) {
+  animation: settle .9s var(--ease) both;
+  animation-delay: calc(var(--t0) + .63s + var(--i, 0) * .12s);
+}
+.hero-copy > :nth-child(1) { --i: -4; }
+.hero-copy > :nth-child(3) { --i: 1; }
+.hero-copy > :nth-child(4) { --i: 2; }
+.hero-copy > :nth-child(5) { --i: 3; }
+.hero-copy > :nth-child(6) { --i: 4; }
+@keyframes settle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.hero-signature { color: var(--muted-2); font-size: 10px; }
+
+/* ---------- Portrait presentation ---------- */
+.portrait-wrap {
+  height: auto; min-height: 0;
+  padding: 28px 0 64px;           /* room for the caption so it never collides with the frame */
+}
+.portrait-frame {
+  width: min(78%, 370px);
+  height: auto; aspect-ratio: 4 / 5;   /* scales cleanly at every width (was fixed px heights) */
+  transform: rotate(2deg);
+  translate: calc(var(--px, 0) * 14px) calc(var(--py, 0) * 10px);
+  animation: frameIn 1.3s var(--ease) backwards;
+  animation-delay: calc(var(--t0) + .2s);
+}
+@keyframes frameIn { from { clip-path: inset(0 0 100% 0); opacity: 0; } to { clip-path: inset(0); opacity: 1; } }
+
+/* Image fills the inner frame regardless of how the height is derived. */
+.portrait-frame img {
+  position: absolute; inset: 9px;
+  width: calc(100% - 18px); height: calc(100% - 18px);
+  display: block;
+  object-position: center 22%;
+  filter: saturate(.8) contrast(1.06) brightness(.97);
+}
+
+/* Viewfinder corner marks */
+.portrait-frame:before {
+  content: ""; position: absolute; inset: -14px; z-index: 2; pointer-events: none;
+  background:
+    linear-gradient(var(--gold), var(--gold)) top left / 20px 1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top left / 1px 20px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top right / 20px 1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top right / 1px 20px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left / 20px 1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left / 1px 20px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / 20px 1px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / 1px 20px no-repeat;
+}
+/* A slow light sweep across the frame, like a lens flare passing over film */
+.portrait-frame:after {
+  content: ""; position: absolute; inset: 9px; z-index: 1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 236, 190, .14) 50%, transparent 62%) 120% 0 / 250% 100% no-repeat;
+  mix-blend-mode: screen;
+  animation: sheen 8s ease-in-out calc(var(--t0) + 1.6s) infinite;
+}
+@keyframes sheen { 0%, 55% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+
+/* Light that leans toward the pointer; falls back to a fixed soft key light */
+.portrait-overlay {
+  background:
+    radial-gradient(circle at calc(50% + var(--px, 0) * 28%) calc(32% + var(--py, 0) * 28%), rgba(255, 226, 160, .13), transparent 46%),
+    linear-gradient(0deg, rgba(5, 6, 8, .6), transparent 50%, rgba(211, 173, 102, .08));
+}
+
+/* Depth layers: nearer layers travel further than far ones */
+.portrait-orbit { translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -12px); }
+.orbit-a { animation: orbitA 70s linear infinite; }
+.orbit-b { animation: orbitB 100s linear infinite; }
+.orbit-a:after {
+  content: ""; position: absolute; top: -4px; left: 50%;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gold2); box-shadow: 0 0 14px var(--gold);
+}
+@keyframes orbitA { from { transform: rotate(-25deg); } to { transform: rotate(335deg); } }
+@keyframes orbitB { from { transform: rotate(35deg); }  to { transform: rotate(-325deg); } }
+
+.floating-note { translate: calc(var(--px, 0) * 26px) calc(var(--py, 0) * 18px); }
+.portrait-label {
+  left: calc(50% - min(39%, 185px));   /* aligns with the frame's left edge */
+  translate: calc(var(--px, 0) * 8px) 0;
+}
+.portrait-label span { font-size: 10px; }
+.portrait-placeholder small { font-size: 10px; }
+
+.scroll-cue span { transform-origin: top; animation: cue 2.6s ease-in-out infinite; }
+@keyframes cue { 0% { transform: scaleY(0); opacity: 1; } 55% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* ---------- Buttons ---------- */
+.button { position: relative; overflow: hidden; }
+.button-gold:after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .32) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform .7s var(--ease);
+}
+.button-gold:hover:after { transform: translateX(120%); }
+.button-outline { transition: transform .25s, background .25s, border-color .25s; }
+.button-outline:hover { background: rgba(201, 168, 106, .08); border-color: rgba(240, 215, 160, .5); }
+.text-link:hover { color: var(--gold2); }
+
+/* ---------- Content sections: legibility + considered hover states ---------- */
+.project-type, .status-note { font-size: 10px; }
+.status-note, .section-index, .statement-bottom span, footer > span, footer > a:last-child { color: var(--muted-2); }
+.section-index, .statement-bottom span, footer > span, footer > a:last-child { font-size: 10px; }
+.project-art small { font-size: 9px; }
+footer > a:last-child:hover { color: var(--gold2); }
+
+.project-art { transition: border-color .4s; }
+.project-art > :not(small) { transition: transform .9s var(--ease); }
+.project-card:hover .project-art { border-color: var(--line); }
+.project-card:hover .project-art > :not(small) { transform: scale(1.05); }
+
+.service-list b { transition: transform .3s var(--ease); }
+.service-list > div:hover b { transform: translate(4px, -4px); }
+
+/* Featured project leads the grid on wide screens (3 remaining cards sit in one row) */
+@media (min-width: 1100px) {
+  .project-grid { grid-template-columns: repeat(3, 1fr); }
+  .project-featured { grid-column: 1 / -1; }
+  .project-featured .project-art { height: 340px; }
+  .project-featured .project-meta p { max-width: 520px; }
+  .project-grid > .project-card:not(.project-featured) .project-art { height: 240px; }
+}
+
+/* ---------- Responsive refinements ---------- */
+@media (max-width: 900px) {
+  html.is-scrolled .topbar { height: 62px; }
+}
+@media (max-width: 650px) {
+  html.is-scrolled .topbar { height: 70px; }   /* keep the dropdown anchored; no jump on mobile */
+  nav { top: 100%; }
+  nav a { align-self: flex-start; }
+  .portrait-wrap { padding: 20px 0 60px; margin: 0; }
+  .portrait-frame { width: min(76%, 340px); }
+  .floating-note { right: 0; top: 36px; padding: 13px 15px; }
+  .portrait-label { bottom: 6px; }
+  .hero-copy > :nth-child(6) { margin-top: 36px; }
+}
+
+/* ---------- Reduced motion ----------
+   The foundation shortens animation-duration to .01ms, which would make
+   infinite animations loop at full speed. Turn ours off outright instead. */
+@media (prefers-reduced-motion: reduce) {
+  .intro-screen { display: none; }
+  .hero h1 .line-in,
+  .hero-copy > *,
+  .portrait-frame,
+  .portrait-frame:after,
+  .orbit-a, .orbit-b,
+  .scroll-cue span,
+  nav.open { animation: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  .scroll-progress { display: none; }
+}
