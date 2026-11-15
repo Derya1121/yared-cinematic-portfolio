@@ -1,0 +1,250 @@
+/* ==========================================================================
+   stage6.css — 3D cinematic layer, built on Stage 5.
+   Loaded last. It refines existing rules by cascade order and adds new ones;
+   nothing from Stage 5 is edited. Remove the <link> to return to Stage 5.
+
+   Design rules for this layer
+   - CSS 3D + one small canvas. No libraries.
+   - Everything decorative is aria-hidden and pointer-events:none.
+   - Expensive effects (backdrop blur, canvas trails) are limited to fine
+     pointers and switched off by html.lite (low-end / data-saver / slow frames).
+   - prefers-reduced-motion removes all of it.
+   ========================================================================== */
+
+:root {
+  --s6-ease: cubic-bezier(.2, .72, .18, 1);
+  --s6-champagne: #ecd9a8;
+  --s6-glass: linear-gradient(145deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02) 46%, rgba(231, 207, 154, .06));
+  --s6-glass-line: rgba(231, 207, 154, .2);
+  --s6-edge: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 -22px 40px -30px rgba(231, 207, 154, .16);
+}
+
+/* ---------- Light field (canvas drawn by stage6.js) ---------- */
+.gold-field, .gold-trail {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.gold-field { z-index: -1; }
+.gold-trail { z-index: 30; }
+/* the foundation gave this section an opaque panel, which would hide the light behind it */
+.work { background: rgba(10, 11, 14, .5); }
+
+/* ---------- Header: floating glass pill, like a camera HUD (desktop) ---------- */
+@media (min-width: 901px) {
+  nav {
+    padding: 5px; gap: 2px; border-radius: 99px;
+    border: 1px solid var(--s6-glass-line);
+    background: linear-gradient(145deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 14px 34px -18px #000;
+  }
+  nav a { padding: 9px 16px; border-radius: 99px; transition: color .25s, background-color .25s; }
+  nav a:after { display: none; }
+  nav a:hover { background: rgba(231, 207, 154, .08); }
+  nav a.is-active { background: rgba(231, 207, 154, .14); color: var(--gold2); }
+}
+@media (hover: hover) and (pointer: fine) {
+  html:not(.lite) nav { -webkit-backdrop-filter: blur(14px) saturate(1.25); backdrop-filter: blur(14px) saturate(1.25); }
+}
+
+/* ---------- Hero: a lit stage with real depth ---------- */
+.hero { position: relative; }
+
+/* perspective floor: gold grid receding to the horizon */
+.hero::after {
+  content: ""; position: absolute; left: -12%; right: -12%; bottom: 0; height: 44%;
+  z-index: -1; pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(231, 207, 154, .24) 0 1px, transparent 1px 92px),
+    repeating-linear-gradient(0deg, rgba(231, 207, 154, .18) 0 1px, transparent 1px 66px);
+  transform: perspective(560px) rotateX(63deg);
+  transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, .35) 45%, transparent 88%);
+  mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, .35) 45%, transparent 88%);
+}
+
+/* three-dimensional lettering on the one gold word (offsets stay inside the line mask) */
+.hero h1 em {
+  text-shadow: 0 1px 0 #8a6a33, 0 2px 0 #6d5429, 0 3px 0 #523f1e, 0 4px 0 #3a2c14;
+}
+
+/* portrait stage: everything inside shares one perspective */
+.portrait-wrap { perspective: 1300px; perspective-origin: 50% 38%; }
+.portrait-frame {
+  z-index: 1; transform-style: preserve-3d;
+  transform: rotate(2deg) rotateX(calc(var(--py, 0) * -7deg)) rotateY(calc(var(--px, 0) * 9deg));
+  box-shadow: 0 40px 110px rgba(0, 0, 0, .75), 0 0 80px rgba(201, 168, 106, .1), var(--s6-edge);
+}
+.portrait-label, .floating-note { z-index: 2; }
+
+/* gyroscope rings: tilted in 3D, each turning on its own axis */
+.portrait-orbit {
+  transform-style: preserve-3d;
+  border-color: rgba(231, 207, 154, .3);
+  box-shadow: 0 0 26px rgba(201, 168, 106, .12), inset 0 0 26px rgba(201, 168, 106, .06);
+}
+.orbit-a { width: min(116%, 540px); height: auto; aspect-ratio: 1; animation: s6RingA 48s linear infinite; }
+.orbit-b { width: min(100%, 470px); height: auto; aspect-ratio: 1; border-color: rgba(255, 255, 255, .11); animation: s6RingB 64s linear infinite; }
+.orbit-c {
+  width: min(86%, 400px); aspect-ratio: 1; height: auto; position: absolute;
+  border: 1px solid rgba(231, 207, 154, .2); border-radius: 50%;
+  animation: s6RingC 40s linear infinite;
+}
+.orbit-b:after, .orbit-c:after {
+  content: ""; position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold2); box-shadow: 0 0 12px var(--gold);
+}
+@keyframes s6RingA { from { transform: rotateX(74deg) rotateY(-12deg) rotateZ(0); } to { transform: rotateX(74deg) rotateY(-12deg) rotateZ(360deg); } }
+@keyframes s6RingB { from { transform: rotateY(72deg) rotateX(8deg) rotateZ(0); } to { transform: rotateY(72deg) rotateX(8deg) rotateZ(-360deg); } }
+@keyframes s6RingC { from { transform: rotateX(56deg) rotateY(46deg) rotateZ(0); } to { transform: rotateX(56deg) rotateY(46deg) rotateZ(360deg); } }
+
+/* floating liquid-glass tags at different depths */
+.depth-chip {
+  position: absolute; z-index: 0; padding: 11px 16px; border-radius: 99px;
+  font: 700 10px Manrope, 'DM Sans', sans-serif; letter-spacing: .2em; white-space: nowrap;
+  color: var(--s6-champagne);
+  background: var(--s6-glass); border: 1px solid var(--s6-glass-line);
+  box-shadow: var(--s6-edge), 0 18px 40px -18px #000;
+  pointer-events: none;
+}
+.chip-a { z-index: 3; left: -3%; top: 21%; --z: 90px; translate: calc(var(--px, 0) * 22px) calc(var(--py, 0) * 14px); animation: s6Bob 7s ease-in-out infinite; }
+.chip-b { z-index: 3; right: -5%; bottom: 27%; --z: 45px; translate: calc(var(--px, 0) * -16px) calc(var(--py, 0) * -10px); animation: s6Bob 8.5s ease-in-out -2s infinite; }
+@keyframes s6Bob {
+  0%, 100% { transform: translateZ(var(--z)) translateY(0); }
+  50% { transform: translateZ(var(--z)) translateY(-9px); }
+}
+.floating-note {
+  background: var(--s6-glass); border-color: var(--s6-glass-line); box-shadow: var(--s6-edge), 0 20px 46px -20px #000;
+}
+@media (hover: hover) and (pointer: fine) {
+  html:not(.lite) .depth-chip, html:not(.lite) .floating-note {
+    -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+  }
+}
+
+/* touch devices have no pointer to tilt toward, so the frame breathes instead */
+@media (hover: none), (pointer: coarse) {
+  .portrait-frame { animation: s6Breathe 9s ease-in-out infinite; }
+}
+@keyframes s6Breathe {
+  0%, 100% { transform: rotate(2deg) rotateX(2deg) rotateY(-5deg); }
+  50% { transform: rotate(2deg) rotateX(-2deg) rotateY(5deg); }
+}
+
+/* ---------- Liquid-glass project panels with 3D tilt ---------- */
+.project-grid { gap: 46px 26px; }
+.project-card {
+  --tx: 0deg; --ty: 0deg; --gx: 30%; --gy: 0%; --rim: 140deg;
+  position: relative; padding: 14px 14px 18px; border-radius: 22px;
+  background: var(--s6-glass);
+  border: 1px solid rgba(231, 207, 154, .13);
+  box-shadow: var(--s6-edge), 0 34px 64px -34px #000;
+  transform-style: preserve-3d;
+  transition: opacity .3s var(--s6-ease), transform .7s var(--s6-ease), box-shadow .4s var(--s6-ease), border-color .4s;
+}
+/* Specificity note: the foundation's scroll reveal sets `.reveal.is-visible { transform: translateY(0) }`
+   on these cards. These selectors out-rank it so the tilt transform is the one that applies. */
+.project-card, .project-card.reveal, .project-card.reveal.is-visible {
+  transform: perspective(1000px) rotateX(var(--tx)) rotateY(var(--ty));
+}
+.project-card.is-tilting { transition: opacity .3s var(--s6-ease), transform .16s ease-out, box-shadow .4s var(--s6-ease), border-color .4s; will-change: transform; }
+.project-card:hover, .project-card.is-tilting {
+  border-color: rgba(231, 207, 154, .3);
+  box-shadow: var(--s6-edge), 0 46px 80px -34px #000, 0 0 70px -26px rgba(201, 168, 106, .42);
+}
+/* specular glare that follows the pointer */
+.project-card::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--gx) var(--gy), rgba(255, 244, 216, .17), transparent 52%);
+  opacity: 0; transition: opacity .4s; transform: translateZ(44px);
+}
+.project-card:hover::before, .project-card.is-tilting::before { opacity: 1; }
+/* rim light: a bright edge arc whose angle tracks the pointer */
+.project-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--rim), rgba(255, 238, 196, .7), transparent 22%, transparent 62%, rgba(255, 238, 196, .25) 82%, rgba(255, 238, 196, .7));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: .5; transition: opacity .4s;
+}
+.project-card:hover::after, .project-card.is-tilting::after { opacity: 1; }
+/* layers inside the card sit at different depths */
+.project-art { border-radius: 14px; transform: translateZ(26px); box-shadow: 0 22px 36px -22px #000; }
+.project-meta { transform: translateZ(14px); }
+.status-note { transform: translateZ(8px); padding-left: 2px; }
+
+/* switching category flips cards in */
+@keyframes s6Flip {
+  from { opacity: 0; transform: perspective(1000px) rotateY(-18deg) rotateX(6deg) translateY(16px); }
+  to { opacity: 1; transform: perspective(1000px) rotateY(0) rotateX(0); }
+}
+.project-card.s6-flip { animation: s6Flip .75s var(--s6-ease) both; }
+
+/* the other panels share the glass language */
+.external-demo, .capability-card {
+  border-radius: 20px; border-color: var(--s6-glass-line);
+  background: var(--s6-glass);
+  box-shadow: var(--s6-edge), 0 28px 56px -32px #000;
+}
+.capability-card { background: linear-gradient(145deg, rgba(201, 168, 106, .07), rgba(18, 19, 23, .78) 60%); }
+
+/* the glass cards keep Stage 5's pressed state on touch, now with the tilt intact */
+@media (hover: none) and (pointer: coarse) {
+  .project-card:active, .project-card.reveal.is-visible:active { transform: perspective(1000px) rotateX(var(--tx)) rotateY(var(--ty)) scale(.992); }
+}
+
+/* ---------- Camera-style entrances (classes are added by stage6.js only) ---------- */
+.s6-js .section:not(.hero) { perspective: 1400px; }
+.s6-js .s6-r {
+  opacity: 0; rotate: 1 0 0 9deg; scale: .985;
+  transform-origin: 50% 100%;
+  transition: opacity .9s var(--s6-ease), rotate 1s var(--s6-ease), scale 1s var(--s6-ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.s6-js .s6-r.s6-in { opacity: 1; rotate: none; scale: none; }
+/* a hairline of light draws across each section as it arrives */
+.section:not(.hero)::before {
+  content: ""; position: absolute; left: 8vw; right: 8vw; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0); opacity: 0; transition: transform 1.4s var(--s6-ease), opacity 1.4s;
+}
+.section.s6-seen::before { transform: scaleX(1); opacity: .6; }
+
+/* ---------- Low-power mode ---------- */
+html.lite .orbit-c, html.lite .chip-b { display: none; }
+html.lite .orbit-a, html.lite .orbit-b, html.lite .chip-a, html.lite .portrait-frame { animation: none; }
+html.lite .project-card { transition: opacity .3s; }
+html.lite .project-card::before { display: none; }
+html.lite .hero::after { display: none; }
+/* the foundation blurs the header and note; on weak GPUs that is the most expensive thing on the page */
+html.lite .topbar, html.lite .floating-note, html.lite nav {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+html.lite .topbar { background: rgba(8, 9, 11, .94); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 900px) {
+  .depth-chip { font-size: 9px; padding: 9px 13px; }
+  .chip-a { left: 0; top: 14%; }
+  .chip-b { right: 0; bottom: 22%; }
+}
+@media (max-width: 650px) {
+  .hero::after { height: 30%; }
+  .orbit-a { width: min(112%, 400px); }
+  .orbit-b { width: min(96%, 360px); }
+  .orbit-c { width: min(84%, 300px); }
+  .project-card { padding: 12px 12px 16px; border-radius: 20px; }
+  .project-grid { gap: 28px; }
+  .depth-chip { letter-spacing: .14em; }
+}
+
+/* ---------- Reduced motion: everything above becomes still ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .gold-trail { display: none !important; }
+  .orbit-a, .orbit-b, .orbit-c, .chip-a, .chip-b, .portrait-frame, .project-card.s6-flip { animation: none !important; }
+  .portrait-frame { transform: rotate(2deg); }
+  .project-card, .project-card.reveal, .project-card.reveal.is-visible, .project-card.is-tilting { transform: none; transition: none; }
+  .project-card::before { display: none; }
+  .project-art, .project-meta, .status-note { transform: none; }
+  .s6-js .s6-r { opacity: 1; rotate: none; scale: none; transition: none; }
+  .section::before { transition: none; }
+}
