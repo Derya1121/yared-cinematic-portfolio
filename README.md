@@ -91,3 +91,17 @@ Performance and accessibility:
 Facebook: the link was removed from the site's social links. The Facebook account itself is untouched. To restore it, re-add the anchor from git history (commit before this change) in `index.html`.
 
 Unchanged and still pending: the booking preview stays marked NOT LIVE and the assistant preview NOT CONNECTED. No portrait, screenshots, testimonials, demo URLs or backend were added.
+
+## Stage 7: immersive 3D cinematic experience
+
+Branch `claude/stage7-immersive-3d-inbox`, based on Stage 6 (`15e4643`). Two new files loaded last (`stage7.css`, `stage7.js`); `index.html` was restructured into scenes and `stage6.js` gained a small particle-palette hook (defaults unchanged). Remove the `stage7` link/script to return to Stage 6 behaviour.
+
+- **Intro:** dimensional DERYA (stacked 3D letters), warp light trails, gyro rings, camera push-through into the page. About 5.6 s, 3.6 s on low-end. Skip button, Esc/Enter/Space or click. Plays once per session, never under reduced motion, 9 s failsafe.
+- **Colour:** ink base with iris, aqua, ember and rose light; the page ambience changes per scene. Legacy gold tokens are re-mapped.
+- **Scenes:** cover, introduction (+ portrait), selected work, capabilities, profile (+ portrait), contact. Sections enter and leave with a camera move; a scene rail (desktop) shows position.
+- **Selected work:** covers are cinematic 3D panels in a reel. Desktop: vertical scroll drives the reel sideways (pinned). Touch, tablet, low-end and reduced motion: native swipe with snap. Category filters still work and re-measure the reel.
+- **Technology:** CSS 3D and one canvas (the Stage 6 light field). No WebGL, no libraries, so there is nothing to fall back from.
+
+Portrait: no approved photo is in the repository. Three slots (cover, introduction, profile) all read `assets/yared-portrait.jpg` and show a clear "PORTRAIT PENDING" state until it exists. Nothing is generated or substituted.
+
+Not implemented (unchanged): booking stays NOT LIVE and the assistant NOT CONNECTED. No inbox, backend or database was added in this commit.

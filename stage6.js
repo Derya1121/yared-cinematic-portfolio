@@ -33,12 +33,17 @@
      ====================================================================== */
   var field = null;
 
-  function makeSprite() {
+  /* Light colours. window.__S6_PALETTE (set before this script) may supply several
+     {c: core, m: mid, e: edge} "r,g,b" triples; the default is the original gold. */
+  var PAL = (window.__S6_PALETTE && window.__S6_PALETTE.length) ? window.__S6_PALETTE
+    : [{ c: '255,244,216', m: '236,200,125', e: '205,170,107' }];
+
+  function makeSprite(p) {
     var s = document.createElement('canvas'); s.width = s.height = 64;
     var c = s.getContext('2d'), g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-    g.addColorStop(0, 'rgba(255,244,216,1)');
-    g.addColorStop(.22, 'rgba(236,200,125,.55)');
-    g.addColorStop(1, 'rgba(205,170,107,0)');
+    g.addColorStop(0, 'rgba(' + p.c + ',1)');
+    g.addColorStop(.22, 'rgba(' + p.m + ',.55)');
+    g.addColorStop(1, 'rgba(' + p.e + ',0)');
     c.fillStyle = g; c.fillRect(0, 0, 64, 64);
     return s;
   }
@@ -50,7 +55,7 @@
     document.body.insertBefore(canvas, document.body.firstChild);
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
-    var sprite = makeSprite();
+    var sprites = PAL.map(makeSprite);
 
     var W = 0, H = 0, dpr = 1, motes = [], comets = [];
     var scrollY = window.scrollY || 0, px = 0, py = 0, tpx = 0, tpy = 0;
@@ -65,7 +70,8 @@
     function makeMote(initial) {
       return {
         x: Math.random(), y: initial ? Math.random() : 1.05, z: .15 + Math.random() * .85,
-        ph: Math.random() * 6.283, sp: .004 + Math.random() * .014
+        ph: Math.random() * 6.283, sp: .004 + Math.random() * .014,
+        k: Math.floor(Math.random() * PAL.length)
       };
     }
     function resize() {
@@ -88,7 +94,7 @@
         var r = 2 + m.z * 7;
         var tw = reduced ? .8 : .55 + .45 * Math.sin(t * .0011 * (.6 + m.z) + m.ph);
         ctx.globalAlpha = (.12 + m.z * .5) * tw;
-        ctx.drawImage(sprite, x - r, y - r, r * 2, r * 2);
+        ctx.drawImage(sprites[m.k], x - r, y - r, r * 2, r * 2);
       }
       ctx.globalAlpha = 1;
     }
@@ -102,7 +108,8 @@
         x: fromTop ? W * (.35 + Math.random() * .65) : W * 1.05,
         y: fromTop ? -20 : H * (.05 + Math.random() * .4),
         vx: -Math.cos(ang) * speed, vy: Math.sin(ang) * speed,
-        age: 0, life: 1.15 + Math.random() * .5, len: 130 + Math.random() * 120
+        age: 0, life: 1.15 + Math.random() * .5, len: 130 + Math.random() * 120,
+        k: Math.floor(Math.random() * PAL.length)
       });
     }
     function drawComets(dt) {
@@ -114,12 +121,13 @@
         var k = Math.sin((c.age / c.life) * Math.PI);                 // fade in, then out
         var mag = Math.sqrt(c.vx * c.vx + c.vy * c.vy), tx = c.x - c.vx / mag * c.len, ty = c.y - c.vy / mag * c.len;
         var g = ctx.createLinearGradient(c.x, c.y, tx, ty);
-        g.addColorStop(0, 'rgba(255,240,205,' + (.85 * k).toFixed(3) + ')');
-        g.addColorStop(.35, 'rgba(231,196,120,' + (.3 * k).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(205,170,107,0)');
+        var pc = PAL[c.k];
+        g.addColorStop(0, 'rgba(' + pc.c + ',' + (.85 * k).toFixed(3) + ')');
+        g.addColorStop(.35, 'rgba(' + pc.m + ',' + (.3 * k).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(' + pc.e + ',0)');
         ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(tx, ty); ctx.stroke();
-        ctx.globalAlpha = k; ctx.drawImage(sprite, c.x - 11, c.y - 11, 22, 22); ctx.globalAlpha = 1;
+        ctx.globalAlpha = k; ctx.drawImage(sprites[c.k], c.x - 11, c.y - 11, 22, 22); ctx.globalAlpha = 1;
       }
     }
 
@@ -198,7 +206,7 @@
         ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
         for (var i = 1; i < pts.length; i++) {
           var a = 1 - (now - pts[i].t) / 520;
-          ctx.strokeStyle = 'rgba(236,208,140,' + (a * .55).toFixed(3) + ')';
+          ctx.strokeStyle = 'rgba(' + PAL[0].m + ',' + (a * .55).toFixed(3) + ')';
           ctx.lineWidth = 1 + a * 2.2;
           ctx.beginPath(); ctx.moveTo(pts[i - 1].x, pts[i - 1].y); ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
         }
