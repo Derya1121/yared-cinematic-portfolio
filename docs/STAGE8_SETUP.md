@@ -43,9 +43,9 @@ Create a private bot with BotFather, open the bot from the owner Telegram accoun
 
 Use the official WhatsApp Business Cloud API. The business phone number, access token, phone-number ID and an approved outbound message template are required. Configure the webhook and verify delivery receipts. A normal wa.me link does not provide automatic server-side delivery.
 
-## Current booking delivery limitation
+## Booking delivery selection
 
-The current committed database function creates both Telegram and WhatsApp delivery rows for every booking. This is **not** the final requested customer flow. Before enabling booking publicly, update the form, Edge Function and database function so the customer must select exactly one channel and only that channel is queued. Test that no second-channel notification is sent.
+The public booking form requires the customer to choose Telegram or WhatsApp. The Edge Function rejects missing/unsupported choices, and the database stores the selected channel and creates one delivery row for that channel only. The database column has a Telegram default for internal compatibility, but the public Edge Function does not accept a missing choice. Verify this behaviour with the SQL and unit tests before deployment.
 
 ## Test and deployment gates
 
