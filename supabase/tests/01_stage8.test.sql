@@ -192,11 +192,11 @@ select t.rows($q$select 1 from public.notification_deliveries where status = 'se
 commit;
 
 begin; select t.as_service();
--- booking 1 (Abel / website): telegram ok, whatsapp fails
+-- booking 1 (Abel / website): Telegram succeeds; booking 2 (AI assistant): WhatsApp fails
 select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='telegram'), true, 'tg-1')$q$, 'sent', 'E4 telegram success -> sent');
-select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'), false, null, 'timeout')$q$, 'failed', 'E5 whatsapp failure -> failed (independent of telegram)');
+select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'), false, null, 'timeout')$q$, 'failed', 'E5 selected WhatsApp delivery failure -> failed');
 select t.eq($q$select d.status from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='telegram'$q$, 'sent', 'E6 telegram stays sent when whatsapp fails');
-select t.eq($q$select (next_attempt_at > now())::text from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='whatsapp'$q$, 'true', 'E7 failed delivery is scheduled for a later retry (backoff)');
+select t.eq($q$select (next_attempt_at > now())::text from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'$q$, 'true', 'E7 selected WhatsApp failure is scheduled for a later retry (backoff)');
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '0', 'E8 a failed delivery is not retried before its backoff elapses');
 select t.eq($q$select public.complete_notification_v1((select id from public.notification_deliveries where status='sent' limit 1), true)$q$, 'ignored', 'E9 completing a row that is not sending is ignored');
 commit;
@@ -205,10 +205,10 @@ commit;
 update public.notification_deliveries set next_attempt_at = now() - interval '1 second' where status = 'failed';
 begin; select t.as_service();
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '1', 'E10 due failed delivery is claimed again');
-select t.eq($q$select attempts::text from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='whatsapp'$q$, '2', 'E11 attempts incremented on retry');
+select t.eq($q$select attempts::text from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'$q$, '2', 'E11 attempts incremented on retry');
 commit;
 do $$ declare i int; r text; id_ uuid; begin
-  select d.id into id_ from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='whatsapp';
+  select d.id into id_ from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp';
   for i in 1..10 loop
     update public.notification_deliveries set status = 'sending', claimed_at = now() where id = id_ and status = 'failed';
     select public.complete_notification_v1(id_, false, null, 'still failing') into r;
@@ -220,7 +220,7 @@ do $$ declare i int; r text; id_ uuid; begin
 end $$;
 
 -- not_configured is not a failure and never retries on its own
-update public.notification_deliveries set status = 'sending', claimed_at = now(), attempts = 1 where booking_id = (select id from public.bookings where service = 'ai-assistant') and channel = 'telegram';
+update public.notification_deliveries set status = 'sending', claimed_at = now(), attempts = 1 where booking_id = (select id from public.bookings where service = 'ai-assistant') and channel = 'whatsapp';
 begin; select t.as_service();
 select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'), false, null, 'TELEGRAM_BOT_TOKEN not set', true)$q$, 'not_configured', 'E13 missing credentials -> not_configured');
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '0', 'E14 not_configured rows are not auto-retried');
