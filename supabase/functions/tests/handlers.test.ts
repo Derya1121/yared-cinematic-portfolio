@@ -27,7 +27,7 @@ const post = (body: unknown, headers: Record<string, string> = {}) => new Reques
   method: "POST", headers: { origin: ORIGIN, "content-type": "application/json", "x-forwarded-for": "203.0.113.7", "user-agent": "UA-TEST", ...headers },
   body: typeof body === "string" ? body : JSON.stringify(body),
 });
-const booking = (o: Record<string, unknown> = {}) => ({ name: "Abel", email: "a@b.co", service: "website", description: "I need a website", t: NOW - 10_000, website: "", client_key: "key-12345678", ...o });
+const booking = (o: Record<string, unknown> = {}) => ({ name: "Abel", email: "a@b.co", delivery_channel: "telegram", service: "website", description: "I need a website", t: NOW - 10_000, website: "", client_key: "key-12345678", ...o });
 
 test("CORS: unlisted origin is refused; listed origin is echoed; no wildcard", async () => {
   const { deps } = make();
@@ -79,6 +79,7 @@ test("valid booking: saved, honest response, hashed IP only, notifications run i
   assert.equal(r.status, 200); assert.equal(j.saved, true); assert.equal(j.reference, "DB-ABCDEF12");
   assert.equal("notified" in j, false, "response must not claim notifications were sent");
   const create = m.calls.find((c) => c.fn === "create_booking_v1")!;
+  assert.equal((create.args.p as Record<string, unknown>).delivery_channel, "telegram");
   assert.match(String(create.args.p_ip_hash), /^[0-9a-f]{32}$/);
   assert.equal(JSON.stringify(m.calls).includes("203.0.113.7"), false, "raw IP must never be sent to the database");
   await Promise.all(m.bg);
