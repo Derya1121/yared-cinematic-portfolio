@@ -1,0 +1,21 @@
+name: Stage 8 static checks
+on:
+  push:
+    branches: [claude/stage8-cms-admin]
+  pull_request:
+    branches: [claude/stage8-cms-admin]
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check admin/admin.js
+          node --check cms-public.js
+          node --check cms-boot.js
+      - name: Run admin static security checks
+        run: node --test tests/admin-static.test.js
