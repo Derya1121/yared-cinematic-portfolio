@@ -158,7 +158,7 @@
           .then(function (o) {
             if (o.s === 200 && o.j && o.j.saved) {
               status.className = 's8-status is-ok';
-              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' Your selected inbox notification is being processed.' : ' Thank you.');
+              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' Your request is saved. I will reply using your contact details.' : ' Thank you.');
               form.reset(); key = rid(); firstTouch = 0;
             } else if (o.s === 422) {
               status.className = 's8-status is-error'; status.textContent = MSG[o.j.reason === 'contact_required' ? 'contact_required' : o.j.field] || 'Please check the form and try again.';
