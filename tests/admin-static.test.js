@@ -43,3 +43,9 @@ test('project upload errors are caught and save button is restored',()=>{
   assert.match(js,/try\{const f=new FormData\(form\)/);
   assert.match(js,/finally\{btn\.disabled=false\}/);
 });
+
+test('CMS draft saving iterates over every text field and image input',()=>{
+  assert.match(js,/for\s*\(const el of \$\$\('\[data-content-key\]'\)\)/);
+  assert.match(js,/for\s*\(const el of \$\$\('\[data-content-image\]'\)\)/);
+  assert.doesNotMatch(js,/for\s*\(const el of \$\('\[data-content-(?:key|image)\]'\)\)/);
+});
