@@ -119,7 +119,7 @@
   function fnUrl(n) { return BASE + '/functions/v1/' + n; }
   function rid() { var a = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(a); return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
   var MSG = {
-    name: 'Please enter your name.', email: 'That email address does not look right.', whatsapp: 'Use international format, e.g. +251912345678.',
+    name: 'Please enter your name.', delivery_channel: 'Choose Telegram or WhatsApp for the booking notification.', email: 'That email address does not look right.', whatsapp: 'Use international format, e.g. +251912345678.',
     service: 'Please choose a service.', description: 'Please describe what you need (at least 10 characters).', contact_required: 'Add an email or a WhatsApp number so I can reply.',
     message: 'Please write a message (at least 5 characters).', category: 'Please choose a topic.', budget: 'Please pick a budget option.'
   };
@@ -142,7 +142,7 @@
       var d = {}; qa('input, select, textarea', form).forEach(function (el) { if (el.name) d[el.name] = el.value.trim(); });
       var err = null, bad = null;
       if (kind === 'booking') {
-        if (!d.name) err = 'name'; else if (!d.email && !d.whatsapp) err = 'contact_required';
+        if (!d.name) err = 'name'; else if (d.delivery_channel !== 'telegram' && d.delivery_channel !== 'whatsapp') err = 'delivery_channel'; else if (!d.email && !d.whatsapp) err = 'contact_required';
         else if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) err = 'email';
         else if (d.whatsapp && !/^\+[1-9][0-9\s().-]{7,18}$/.test(d.whatsapp)) err = 'whatsapp';
         else if (!d.service) err = 'service'; else if (d.description.length < 10) err = 'description';
@@ -158,7 +158,7 @@
           .then(function (o) {
             if (o.s === 200 && o.j && o.j.saved) {
               status.className = 's8-status is-ok';
-              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' I will reply by email or WhatsApp.' : ' Thank you.');
+              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' Your selected inbox notification is being processed.' : ' Thank you.');
               form.reset(); key = rid(); firstTouch = 0;
             } else if (o.s === 422) {
               status.className = 's8-status is-error'; status.textContent = MSG[o.j.reason === 'contact_required' ? 'contact_required' : o.j.field] || 'Please check the form and try again.';
