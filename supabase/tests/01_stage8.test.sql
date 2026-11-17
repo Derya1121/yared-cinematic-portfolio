@@ -140,17 +140,18 @@ begin; select t.as_service();
 select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","business":"Test Co","email":"Abel@Example.com","whatsapp":"+251 91 234 5678","service":"website","budget":"500-1500","description":"I need a new website for my shop."}'::jsonb, 'iphash1', 'clientkey0001'))->>'ok'$q$, 'true', 'D1 valid booking is stored');
 select t.eq($q$select reference ~ '^DB-[0-9A-F]{8}$' from public.bookings$q$, 'true', 'D2 booking gets a DB-XXXXXXXX reference');
 select t.eq($q$select email || '|' || whatsapp from public.bookings$q$, 'abel@example.com|+251912345678', 'D3 email lower-cased, whatsapp normalised');
-select t.rows('select 1 from public.notification_deliveries where status = $$pending$$', 2, 'D4 telegram + whatsapp delivery rows created, pending');
+select t.rows('select 1 from public.notification_deliveries where status = $pending$', 1, 'D4 only the selected Telegram delivery row is created, pending');
 select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","email":"abel@example.com","whatsapp":"+251912345678","service":"website","description":"I  need a NEW website   for my shop."}'::jsonb))->>'duplicate'$q$, 'true', 'D5 same request re-sent (different case/spacing) is deduplicated');
 select t.eq($q$select (public.create_booking_v1('{"name":"Other","email":"zzz@example.com","service":"other","description":"completely different text here"}'::jsonb, null, 'clientkey0001'))->>'duplicate'$q$, 'true', 'D6 the same client_key is idempotent');
 select t.rows('select 1 from public.bookings', 1, 'D7 only one booking row exists after 3 submissions');
-select t.rows('select 1 from public.notification_deliveries', 2, 'D8 duplicates create no extra notifications');
-select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","email":"abel@example.com","service":"ai-assistant","description":"A different service request entirely."}'::jsonb))->>'duplicate'$q$, 'false', 'D9 a genuinely different request is accepted');
+select t.rows('select 1 from public.notification_deliveries', 1, 'D8 duplicates create no extra notifications');
+select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","email":"abel@example.com","delivery_channel":"whatsapp","service":"ai-assistant","description":"A different service request entirely."}'::jsonb))->>'duplicate'$q$, 'false', 'D9 a genuinely different request is accepted');
 select t.eq($q$select (public.create_booking_v1('{"name":"","email":"a@b.co","service":"other","description":"0123456789"}'::jsonb))->>'field'$q$, 'name', 'D10 empty name rejected');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","email":"not-an-email","service":"other","description":"0123456789"}'::jsonb))->>'field'$q$, 'email', 'D11 bad email rejected');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","service":"other","description":"0123456789"}'::jsonb))->>'error'$q$, 'contact_required', 'D12 email or WhatsApp is required');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","whatsapp":"0912345","service":"other","description":"0123456789"}'::jsonb))->>'field'$q$, 'whatsapp', 'D13 non-international WhatsApp rejected');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","email":"a@b.co","service":"hacking","description":"0123456789"}'::jsonb))->>'field'$q$, 'service', 'D14 unknown service rejected');
+select t.eq($q$select (public.create_booking_v1('{"name":"A","email":"a@b.co","delivery_channel":"fax","service":"other","description":"0123456789"}'::jsonb))->>'field'$q$, 'delivery_channel', 'D14b unknown notification channel rejected');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","email":"a@b.co","service":"other","description":"short"}'::jsonb))->>'field'$q$, 'description', 'D15 too-short description rejected');
 select t.eq($q$select (public.create_booking_v1(jsonb_build_object('name','A','email','a@b.co','service','other','description',repeat('x',2001))))->>'field'$q$, 'description', 'D16 too-long description rejected');
 select t.eq($q$select (public.create_booking_v1('{"name":"A","email":"a@b.co","service":"other","budget":"a million","description":"0123456789"}'::jsonb))->>'field'$q$, 'budget', 'D17 unknown budget rejected');
@@ -185,15 +186,15 @@ commit;
 -- E. Notification delivery state machine (service role)
 -- =============================================================================
 begin; select t.as_service();
-select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '4', 'E1 claim returns the 4 pending deliveries (2 bookings x 2 channels)');
+select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '2', 'E1 claim returns one selected delivery for each of the two bookings');
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '0', 'E2 claimed rows are not handed out twice');
-select t.rows($q$select 1 from public.notification_deliveries where status = 'sending' and attempts = 1$q$, 4, 'E3 claimed rows are sending with attempts = 1');
+select t.rows($q$select 1 from public.notification_deliveries where status = 'sending' and attempts = 1$q$, 2, 'E3 selected-channel rows are sending with attempts = 1');
 commit;
 
 begin; select t.as_service();
 -- booking 1 (Abel / website): telegram ok, whatsapp fails
 select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='telegram'), true, 'tg-1')$q$, 'sent', 'E4 telegram success -> sent');
-select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='whatsapp'), false, null, 'timeout')$q$, 'failed', 'E5 whatsapp failure -> failed (independent of telegram)');
+select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'), false, null, 'timeout')$q$, 'failed', 'E5 whatsapp failure -> failed (independent of telegram)');
 select t.eq($q$select d.status from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='telegram'$q$, 'sent', 'E6 telegram stays sent when whatsapp fails');
 select t.eq($q$select (next_attempt_at > now())::text from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='website' and d.channel='whatsapp'$q$, 'true', 'E7 failed delivery is scheduled for a later retry (backoff)');
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '0', 'E8 a failed delivery is not retried before its backoff elapses');
@@ -221,7 +222,7 @@ end $$;
 -- not_configured is not a failure and never retries on its own
 update public.notification_deliveries set status = 'sending', claimed_at = now(), attempts = 1 where booking_id = (select id from public.bookings where service = 'ai-assistant') and channel = 'telegram';
 begin; select t.as_service();
-select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='telegram'), false, null, 'TELEGRAM_BOT_TOKEN not set', true)$q$, 'not_configured', 'E13 missing credentials -> not_configured');
+select t.eq($q$select public.complete_notification_v1((select d.id from public.notification_deliveries d join public.bookings b on b.id=d.booking_id where b.service='ai-assistant' and d.channel='whatsapp'), false, null, 'TELEGRAM_BOT_TOKEN not set', true)$q$, 'not_configured', 'E13 missing credentials -> not_configured');
 select t.eq($q$select jsonb_array_length(public.claim_notifications_v1(50))::text$q$, '0', 'E14 not_configured rows are not auto-retried');
 commit;
 
@@ -312,7 +313,7 @@ commit;
 begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 select t.rows('select 1 from public.bookings', 3, 'H1 owner sees all bookings');
 select t.rows('select 1 from public.feedback', 2, 'H2 owner sees all feedback');
-select t.rows('select 1 from public.notification_deliveries', 6, 'H3 owner sees delivery records');
+select t.rows('select 1 from public.notification_deliveries', 4, 'H3 owner sees selected-channel rows plus two stale test rows');
 select t.dml($q$update public.bookings set status = 'read' where service = 'website'$q$, 1, 'H4 owner can change booking status');
 select t.dml($q$update public.bookings set status = 'contacted' where service = 'website'$q$, 1, 'H5 owner can mark contacted');
 select t.errs($q$update public.bookings set status = 'archived-by-me'$q$, '23514', 'H6 unknown booking status rejected');
