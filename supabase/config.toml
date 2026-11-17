@@ -1,0 +1,20 @@
+# Supabase CLI config fragment for the DERYA portfolio. Copy into / merge with the project's config.toml.
+# Public functions are called by the website without a Supabase login, so JWT verification is off for them.
+# That is intentional: each one enforces its own origin allow-list, honeypot + timing check, rate limit
+# and server-side validation. process-notifications and whatsapp-webhook are protected by shared secrets.
+project_id = "derya-portfolio"
+
+[functions.submit-booking]
+verify_jwt = false
+[functions.submit-feedback]
+verify_jwt = false
+[functions.track-event]
+verify_jwt = false
+[functions.process-notifications]
+verify_jwt = false   # protected by the x-cron-secret header
+[functions.whatsapp-webhook]
+verify_jwt = false   # Meta cannot send a Supabase JWT; protected by X-Hub-Signature-256 + verify token
+
+[auth]
+# The admin account is created by the owner. Nobody else may register.
+enable_signup = false
