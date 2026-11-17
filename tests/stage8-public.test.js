@@ -100,20 +100,24 @@ async function newPage(browser, o) {
     await page.click(f + ' button[type=submit]');
     ok(/email or a WhatsApp/i.test(await page.textContent(f + ' [data-s8-status]')) && log.posts.length === 0, 'client requires email or WhatsApp');
     await page.fill(f + ' [name=email]', 'abel@example.com'); await page.selectOption(f + ' [name=service]', 'website'); await page.fill(f + ' [name=description]', 'I need a new website for my shop.');
+    await page.click(f + ' button[type=submit]');
+    ok(/Telegram or WhatsApp/i.test(await page.textContent(f + ' [data-s8-status]')) && log.posts.length === 0, 'booking requires an explicit Telegram or WhatsApp choice');
+    await page.selectOption(f + ' [name=delivery_channel]', 'telegram');
     const t0 = Date.now(); await page.click(f + ' button[type=submit]'); await page.waitForFunction(() => /DB-TEST1234/.test(document.querySelector('#s8-booking [data-s8-status]').textContent), null, { timeout: 8000 });
     ok(Date.now() - t0 >= 2500, 'submit waits out the 3 s anti-bot window instead of losing an autofilled booking');
     const st = await page.textContent(f + ' [data-s8-status]');
     ok(/Saved\./.test(st) && /DB-TEST1234/.test(st) && !/notif|telegram|whatsapp message|sent to/i.test(st), 'success message states only what is true: saved + reference');
     const body = log.posts[0].body;
-    ok(body.website === '' && typeof body.t === 'number' && /^[0-9a-f]{32}$/.test(body.client_key) && body.email === 'abel@example.com', 'payload has empty honeypot, timestamp, idempotency key');
+    ok(body.website === '' && typeof body.t === 'number' && /^[0-9a-f]{32}$/.test(body.client_key) && body.email === 'abel@example.com' && body.delivery_channel === 'telegram', 'payload includes selected Telegram channel, empty honeypot, timestamp and idempotency key');
     ok(await page.inputValue(f + ' [name=name]') === '', 'form cleared after a confirmed save');
     await ctx.close(); }
 
   // ---- 3. failure honesty + other states
   { const { page, log, ctx } = await newPage(browser, { configured: true, reduced: true, submit: { s: 503, j: { ok: false, error: 'unavailable' } } });
     await page.goto(URL_ + '#book'); await page.waitForTimeout(500);
-    await page.fill('#s8-booking [name=name]', 'Abel'); await page.fill('#s8-booking [name=email]', 'abel@example.com'); await page.selectOption('#s8-booking [name=service]', 'other'); await page.fill('#s8-booking [name=description]', 'A description that is long enough.');
+    await page.fill('#s8-booking [name=name]', 'Abel'); await page.fill('#s8-booking [name=email]', 'abel@example.com'); await page.selectOption('#s8-booking [name=delivery_channel]', 'whatsapp'); await page.selectOption('#s8-booking [name=service]', 'other'); await page.fill('#s8-booking [name=description]', 'A description that is long enough.');
     await page.click('#s8-booking button[type=submit]'); await page.waitForFunction(() => /Nothing was saved/.test(document.querySelector('#s8-booking [data-s8-status]').textContent), null, { timeout: 8000 });
+    ok(log.posts[0]?.body.delivery_channel === 'whatsapp', 'WhatsApp choice reaches the backend unchanged');
     ok(true, 'server failure tells the visitor nothing was saved (no false success)');
     ok(await page.inputValue('#s8-booking [name=name]') === 'Abel', 'the visitor’s text is kept after a failure so they can retry');
     await ctx.close(); }
