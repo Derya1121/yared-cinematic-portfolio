@@ -33,3 +33,13 @@ test('public booking requires exactly one supported inbox channel',()=>{
   assert.match(handler,/delivery_channel: deliveryChannel/);
   assert.match(migration,/values \(v_id, v_channel\)/);
 });
+
+test('booking and admin forms contain real line breaks, not visible escaped sequences',()=>{
+  const page = fs.readFileSync('index.html','utf8');
+  assert.ok(!page.includes('\\\\n'));
+  assert.ok(!html.includes('\\\\n'));
+});
+test('project upload errors are caught and save button is restored',()=>{
+  assert.match(js,/try\{const f=new FormData\(form\)/);
+  assert.match(js,/finally\{btn\.disabled=false\}/);
+});
