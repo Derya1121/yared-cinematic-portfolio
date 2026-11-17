@@ -512,6 +512,7 @@ declare
   v_business text := nullif(btrim(coalesce(p ->> 'business', '')), '');
   v_email text := nullif(lower(btrim(coalesce(p ->> 'email', ''))), '');
   v_wa text := nullif(regexp_replace(coalesce(p ->> 'whatsapp', ''), '[\s().-]', '', 'g'), '');
+  v_channel text := coalesce(nullif(btrim(p ->> 'delivery_channel'), ''), 'telegram');
   v_service text := btrim(coalesce(p ->> 'service', ''));
   v_budget text := nullif(btrim(coalesce(p ->> 'budget', '')), '');
   v_desc text := btrim(coalesce(p ->> 'description', ''));
@@ -522,6 +523,7 @@ begin
   if v_email is not null and (length(v_email) > 254 or v_email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$') then return jsonb_build_object('ok', false, 'field', 'email', 'error', 'invalid'); end if;
   if v_wa is not null and v_wa !~ '^\+[1-9][0-9]{7,14}$' then return jsonb_build_object('ok', false, 'field', 'whatsapp', 'error', 'invalid'); end if;
   if v_email is null and v_wa is null then return jsonb_build_object('ok', false, 'field', 'email', 'error', 'contact_required'); end if;
+  if v_channel not in ('telegram','whatsapp') then return jsonb_build_object('ok', false, 'field', 'delivery_channel', 'error', 'invalid'); end if;
   if v_service not in ('website','ai-assistant','automation','software','other') then return jsonb_build_object('ok', false, 'field', 'service', 'error', 'invalid'); end if;
   if v_budget is not null and v_budget not in ('under-500','500-1500','1500-5000','5000-plus','unsure') then return jsonb_build_object('ok', false, 'field', 'budget', 'error', 'invalid'); end if;
   if length(v_desc) not between 10 and 2000 then return jsonb_build_object('ok', false, 'field', 'description', 'error', 'invalid'); end if;
@@ -543,8 +545,8 @@ begin
   loop
     v_ref := 'DB-' || upper(substr(md5(random()::text || clock_timestamp()::text || i::text), 1, 8));
     begin
-      insert into public.bookings (reference, name, business, email, whatsapp, service, budget, description, dedupe_hash, client_key, ip_hash)
-      values (v_ref, v_name, v_business, v_email, v_wa, v_service, v_budget, v_desc, v_hash, p_client_key, p_ip_hash)
+      insert into public.bookings (reference, name, business, email, whatsapp, delivery_channel, service, budget, description, dedupe_hash, client_key, ip_hash)
+      values (v_ref, v_name, v_business, v_email, v_wa, v_channel, v_service, v_budget, v_desc, v_hash, p_client_key, p_ip_hash)
       returning id into v_id;
       exit;
     exception when unique_violation then
@@ -552,7 +554,7 @@ begin
     end;
   end loop;
 
-  insert into public.notification_deliveries (booking_id, channel) values (v_id, 'telegram'), (v_id, 'whatsapp');
+  insert into public.notification_deliveries (booking_id, channel) values (v_id, v_channel);
   return jsonb_build_object('ok', true, 'duplicate', false, 'id', v_id, 'reference', v_ref);
 end $$;
 
