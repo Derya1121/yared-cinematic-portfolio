@@ -105,3 +105,23 @@ Branch `claude/stage7-immersive-3d-inbox`, based on Stage 6 (`15e4643`). Two new
 Portrait: no approved photo is in the repository. Three slots (cover, introduction, profile) all read `assets/yared-portrait.jpg` and show a clear "PORTRAIT PENDING" state until it exists. Nothing is generated or substituted.
 
 Not implemented (unchanged): booking stays NOT LIVE and the assistant NOT CONNECTED. No inbox, backend or database was added in this commit.
+
+## Stage 8: private admin foundation (in progress)
+
+Branch: `claude/stage8-cms-admin`. This branch is isolated from `main` and preserves the Stage 7 visual base.
+
+Implemented in the branch:
+- Prepared CMS/admin database migration and scratch-Postgres SQL tests (not applied to Supabase).
+- Edge functions for booking, private feedback, privacy-conscious analytics, notification retries and the WhatsApp delivery webhook.
+- Public-site CMS hooks and booking/feedback forms that remain disabled and labelled NOT LIVE until a dedicated Supabase project is configured.
+- A private `/admin/` owner portal with sign-in, overview, content drafts/publish, project management, media uploads, booking inbox, private feedback inbox, analytics, activity and notification retry controls.
+
+Not live or not yet verified:
+- No dedicated portfolio Supabase project exists; no migration or function has been deployed.
+- Admin sign-in and data access cannot work until the owner creates the dedicated project, applies the reviewed migration, creates the owner account and configures the public project URL/anon key.
+- Telegram and WhatsApp credentials/provider setup are not configured. Unit tests use fake services only.
+- Booking currently creates notification records for both channels. The requested customer choice (Telegram OR WhatsApp, exactly one) is a required follow-up before enabling the public booking form.
+- Browser tests and SQL tests were reported by the author; rerun them independently before deployment.
+- The approved owner portrait and verified live project demo URLs are still pending.
+
+See [Stage 8 setup and safety notes](docs/STAGE8_SETUP.md). Do not deploy, apply migrations, configure production credentials or merge this branch without the owner's separate approval.
