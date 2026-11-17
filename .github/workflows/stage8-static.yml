@@ -20,6 +20,25 @@ jobs:
       - name: Run admin static security checks
         run: node --test tests/admin-static.test.js
 
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run public-site browser tests against mocked services
+        run: |
+          python3 -m http.server 8765 > /tmp/stage8-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+          SITE=http://127.0.0.1:8765/index.html node tests/stage8-public.test.js
+
   database:
     runs-on: ubuntu-latest
     services:
