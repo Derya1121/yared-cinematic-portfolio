@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080912">
+  <meta name="robots" content="noindex,nofollow">
+  <title>YARED · Private Command Center</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="login" class="login-panel">
+      <div class="brand">YARED<span>.</span></div>
+      <p class="eyebrow">PRIVATE COMMAND CENTER</p>
+      <h1>Owner sign in</h1>
+      <p class="muted">This area is restricted to the authorized portfolio owner.</p>
+      <form id="login-form">
+        <label>Email<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required minlength="8"></label>
+        <button class="primary" type="submit">Sign in securely</button>
+        <p id="login-status" class="status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="tiny">Admin access is verified against the private admin_users table. Public signup is not available.</p>
+    </section>
+
+    <section id="app" hidden>
+      <header class="top">
+        <div><div class="brand">YARED<span>.</span></div><p class="eyebrow">PRIVATE COMMAND CENTER</p></div>
+        <div class="top-right"><span id="owner-label" class="muted"></span><button id="logout" class="ghost">Sign out</button></div>
+      </header>
+      <nav class="tabs" aria-label="Admin sections">
+        <button data-tab="overview" class="active">Overview</button>
+        <button data-tab="content">Website editor</button>
+        <button data-tab="projects">Projects</button>
+        <button data-tab="bookings">Bookings <b id="booking-count"></b></button>
+        <button data-tab="feedback">Feedback <b id="feedback-count"></b></button>
+        <button data-tab="analytics">Analytics</button>
+        <button data-tab="activity">Activity</button>
+      </nav>
+      <p id="global-status" class="status" role="status" aria-live="polite"></p>
+
+      <section class="view" id="view-overview">
+        <div class="section-head"><div><p class="eyebrow">LIVE OPERATIONS</p><h1>Overview</h1></div><button class="ghost" id="refresh-all">Refresh</button></div>
+        <div class="metrics" id="metrics"><article><span>Bookings</span><strong>—</strong></article><article><span>Feedback</span><strong>—</strong></article><article><span>Projects</span><strong>—</strong></article><article><span>Draft changes</span><strong>—</strong></article></div>
+        <div class="two-col"><article class="panel"><h2>Notification delivery</h2><div id="notification-summary" class="stack muted">Loading…</div></article><article class="panel"><h2>Recent admin activity</h2><div id="recent-activity" class="stack muted">Loading…</div></article></div>
+      </section>
+
+      <section class="view" id="view-content" hidden>
+        <div class="section-head"><div><p class="eyebrow">EDIT WITHOUT REBUILDING</p><h1>Website editor</h1><p class="muted">Changes remain drafts until you publish them.</p></div><button class="primary" id="publish-content">Publish all draft changes</button></div>
+        <div id="content-editor" class="editor-list">Loading…</div>
+      </section>
+
+      <section class="view" id="view-projects" hidden>
+        <div class="section-head"><div><p class="eyebrow">PORTFOLIO CMS</p><h1>Projects & demos</h1></div><button class="primary" id="new-project">Add project</button></div>
+        <form id="project-form" class="panel form-grid" hidden>
+          <h2 id="project-form-title">New project</h2><input type="hidden" name="id">
+          <label>Project title<input name="title" required maxlength="120"></label>
+          <label>Slug<input name="slug" required pattern="[a-z0-9][a-z0-9-]{1,58}[a-z0-9]" maxlength="60"></label>
+          <label>Category<select name="category"><option value="ai">AI</option><option value="business">Business</option><option value="software">Software</option></select></label>
+          <label>Accent<select name="accent"><option>aurex</option><option>derya</option><option>rent</option><option>pulse</option></select></label>
+          <label>Type label<input name="type_label" maxlength="60"></label>
+          <label>Demo URL<input name="demo_url" type="url" placeholder="https://…"></label>
+          <label class="wide">Summary<textarea name="summary" maxlength="300" rows="2"></textarea></label>
+          <label class="wide">Description<textarea name="description" maxlength="4000" rows="4"></textarea></label>
+          <label>Status<select name="status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
+          <label>Featured<select name="featured"><option value="false">No</option><option value="true">Yes</option></select></label>
+          <div class="actions wide"><button class="primary" type="submit">Save project</button><button class="ghost" type="button" id="cancel-project">Cancel</button></div>
+        </form>
+        <div id="project-list" class="cards">Loading…</div>
+      </section>
+
+      <section class="view" id="view-bookings" hidden>
+        <div class="section-head"><div><p class="eyebrow">PRIVATE CUSTOMER REQUESTS</p><h1>Booking inbox</h1></div><button class="ghost" data-refresh="bookings">Refresh</button></div>
+        <div id="booking-list" class="inbox">Loading…</div>
+      </section>
+
+      <section class="view" id="view-feedback" hidden>
+        <div class="section-head"><div><p class="eyebrow">OWNER ONLY · NEVER PUBLIC BY DEFAULT</p><h1>Feedback inbox</h1></div><button class="ghost" data-refresh="feedback">Refresh</button></div>
+        <div id="feedback-list" class="inbox">Loading…</div>
+      </section>
+
+      <section class="view" id="view-analytics" hidden>
+        <div class="section-head"><div><p class="eyebrow">PRIVACY-CONSCIOUS METRICS</p><h1>Analytics</h1></div><div class="actions"><input id="date-from" type="date"><input id="date-to" type="date"><button class="primary" id="load-analytics">Apply</button></div></div>
+        <div id="analytics-result" class="panel muted">Choose a date range.</div>
+      </section>
+
+      <section class="view" id="view-activity" hidden>
+        <div class="section-head"><div><p class="eyebrow">AUDIT TRAIL</p><h1>Admin activity</h1></div><button class="ghost" data-refresh="overview">Refresh</button></div>
+        <div id="activity-list" class="inbox">Loading…</div>
+      </section>
+      <footer>YARED · PRIVATE OWNER ACCESS <span>Never share this URL or your login credentials.</span></footer>
+    </section>
+  </main>
+  <script src="../config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
