@@ -22,3 +22,14 @@ test('browser code contains no privileged provider or Supabase secrets',()=>{
 test('dashboard does not persist access tokens in browser storage',()=>{
   assert.ok(!/localStorage|sessionStorage/.test(js));
 });
+
+test('public booking requires exactly one supported inbox channel',()=>{
+  const page = fs.readFileSync('index.html','utf8');
+  const publicJs = fs.readFileSync('cms-public.js','utf8');
+  const handler = fs.readFileSync('supabase/functions/_shared/handlers.ts','utf8');
+  const migration = fs.readFileSync('supabase/migrations/20261117000000_stage8_cms_admin.sql','utf8');
+  assert.match(page,/<select name="delivery_channel" required>/);
+  assert.match(publicJs,/d\.delivery_channel !== 'telegram' && d\.delivery_channel !== 'whatsapp'/);
+  assert.match(handler,/delivery_channel: deliveryChannel/);
+  assert.match(migration,/values \(v_id, v_channel\)/);
+});
