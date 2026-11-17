@@ -37,7 +37,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 2
-          SITE=http://127.0.0.1:8765/index.html node tests/stage8-public.test.js
+          SITE=http://localhost:8765/index.html node tests/stage8-public.test.js
 
   database:
     runs-on: ubuntu-latest
