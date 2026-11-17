@@ -99,7 +99,7 @@ async function newPage(browser, o) {
     await page.fill(f + ' [name=name]', 'Abel'); await page.fill(f + ' [name=description]', 'Need a site'); await page.selectOption(f + ' [name=delivery_channel]', 'telegram');
     await page.click(f + ' button[type=submit]');
     ok(/email or a WhatsApp/i.test(await page.textContent(f + ' [data-s8-status]')) && log.posts.length === 0, 'client requires email or WhatsApp');
-    await page.fill(f + ' [name=email]', 'abel@example.com'); await page.selectOption(f + ' [name=service]', 'website'); await page.fill(f + ' [name=description]', 'I need a new website for my shop.');
+    await page.fill(f + ' [name=email]', 'abel@example.com'); await page.selectOption(f + ' [name=service]', 'website'); await page.fill(f + ' [name=description]', 'I need a new website for my shop.'); await page.selectOption(f + ' [name=delivery_channel]', '');
     await page.click(f + ' button[type=submit]');
     ok(/Telegram or WhatsApp/i.test(await page.textContent(f + ' [data-s8-status]')) && log.posts.length === 0, 'booking requires an explicit Telegram or WhatsApp choice');
     await page.selectOption(f + ' [name=delivery_channel]', 'telegram');
