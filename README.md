@@ -120,7 +120,7 @@ Not live or not yet verified:
 - No dedicated portfolio Supabase project exists; no migration or function has been deployed.
 - Admin sign-in and data access cannot work until the owner creates the dedicated project, applies the reviewed migration, creates the owner account and configures the public project URL/anon key.
 - Telegram and WhatsApp credentials/provider setup are not configured. Unit tests use fake services only.
-- Booking currently creates notification records for both channels. The requested customer choice (Telegram OR WhatsApp, exactly one) is a required follow-up before enabling the public booking form.
+- The booking form now requires the customer to choose Telegram OR WhatsApp; the Edge Function validates the choice and the database queues only that selected channel. This is code prepared for deployment, not a live notification service.
 - Browser tests and SQL tests were reported by the author; rerun them independently before deployment.
 - The approved owner portrait and verified live project demo URLs are still pending.
 
