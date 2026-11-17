@@ -13,6 +13,7 @@
     };
     var applyFilter = function (filter) {
       var shown = 0;
+      cards = Array.prototype.slice.call(document.querySelectorAll('[data-project-category]'));  /* Stage 8: include CMS-added cards */
       cards.forEach(function (card) {
         var visible = filter === 'all' || card.getAttribute('data-project-category') === filter;
         card.hidden = !visible;

@@ -11,6 +11,7 @@
   <script>try{if(sessionStorage.getItem('yared-intro')==='1')document.documentElement.classList.add('intro-seen')}catch(e){}</script>
   <!-- Stage 7 intro: plays once per session, never under reduced motion, always removed by a 9s failsafe -->
   <script>try{var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&sessionStorage.getItem('derya-s7-intro')!=='1'){r.classList.add('s7-intro');setTimeout(function(){r.classList.remove('s7-intro')},9000)}}catch(e){}</script>
+  <script src="cms-boot.js"></script>
   <noscript><style>.s7-intro-el{display:none!important}html.s7-intro{overflow:auto!important}</style></noscript>
   <meta name="description" content="Yared — Founder & Technology Innovator. Building intelligent software, AI-powered systems and digital solutions.">
   <title>DERYA — Independent Technology Founder</title>
@@ -22,6 +23,7 @@
   <link rel="stylesheet" href="stage5.css">
   <link rel="stylesheet" href="stage6.css">
   <link rel="stylesheet" href="stage7.css">
+  <link rel="stylesheet" href="stage8.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -74,21 +76,21 @@
         <div class="s7-obj o-shard"><span></span></div>
         <div class="s7-obj o-slab"><span><em></em><em></em><em></em></span></div>
       </div>
-      <div class="hero-copy"><p class="eyebrow"><i></i> INDEPENDENT TECHNOLOGY FOUNDER</p><h1>I BUILD THE FUTURE<br>THROUGH <em>TECHNOLOGY.</em></h1><p class="hero-intro">I am Yared — Founder, AI Software Developer, and Technology Innovator.</p><p class="hero-body">I transform ambitious ideas into intelligent software, AI-powered systems, and digital solutions that solve real-world problems.</p><div class="hero-actions"><a class="button button-gold" href="#work">Explore my work <span>↗</span></a><a class="text-link" href="#about">Discover my story <span>↓</span></a></div><div class="hero-signature">THINK BEYOND. BUILD DIFFERENT. CREATE IMPACT.</div></div>
-      <div class="portrait-wrap"><div class="portrait-orbit orbit-a"></div><div class="portrait-orbit orbit-b"></div><div class="portrait-orbit orbit-c" aria-hidden="true"></div><span class="depth-chip chip-b" aria-hidden="true">CREATE IMPACT.</span><div class="portrait-frame"><img src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" decoding="async" fetchpriority="high" onerror="this.style.display='none';this.parentElement.classList.add('portrait-pending')"><div class="portrait-placeholder"><span>Y.</span><small>PORTRAIT PENDING · AWAITING APPROVED PHOTO</small></div><div class="portrait-overlay"></div></div><span class="depth-chip chip-a" aria-hidden="true">BUILD DIFFERENT.</span><div class="portrait-label"><span>01 / THE FOUNDER</span><b>YARED</b></div><div class="floating-note">IDEAS INTO<br><strong>REALITY.</strong></div></div>
+      <div class="hero-copy"><p class="eyebrow"><i></i> <span data-cms="hero.eyebrow">INDEPENDENT TECHNOLOGY FOUNDER</span></p><h1><span data-cms="hero.line1">I BUILD THE FUTURE</span><br><span data-cms="hero.line2">THROUGH</span> <em data-cms="hero.line2_em">TECHNOLOGY.</em></h1><p class="hero-intro" data-cms="hero.intro">I am Yared — Founder, AI Software Developer, and Technology Innovator.</p><p class="hero-body" data-cms="hero.body">I transform ambitious ideas into intelligent software, AI-powered systems, and digital solutions that solve real-world problems.</p><div class="hero-actions"><a class="button button-gold" href="#work">Explore my work <span>↗</span></a><a class="text-link" href="#about">Discover my story <span>↓</span></a></div><div class="hero-signature" data-cms="hero.signature">THINK BEYOND. BUILD DIFFERENT. CREATE IMPACT.</div></div>
+      <div class="portrait-wrap"><div class="portrait-orbit orbit-a"></div><div class="portrait-orbit orbit-b"></div><div class="portrait-orbit orbit-c" aria-hidden="true"></div><span class="depth-chip chip-b" aria-hidden="true">CREATE IMPACT.</span><div class="portrait-frame"><img data-cms-src="media.portrait_hero" src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" decoding="async" fetchpriority="high" onerror="this.style.display='none';this.parentElement.classList.add('portrait-pending')"><div class="portrait-placeholder"><span>Y.</span><small>PORTRAIT PENDING · AWAITING APPROVED PHOTO</small></div><div class="portrait-overlay"></div></div><span class="depth-chip chip-a" aria-hidden="true">BUILD DIFFERENT.</span><div class="portrait-label"><span>01 / THE FOUNDER</span><b>YARED</b></div><div class="floating-note">IDEAS INTO<br><strong>REALITY.</strong></div></div>
       <a class="scroll-cue" href="#about"><span></span> SCROLL TO EXPLORE</a>
     </section>
 
     <!-- Scene 2: personal introduction with portrait -->
     <section class="statement section s7-about" id="about" data-scene="about">
       <div class="s7-about-copy">
-        <p class="eyebrow">A PURPOSE-DRIVEN APPROACH</p><h2>Meaningful technology.<br><em>Real-world impact.</em></h2><div class="statement-bottom"><p>My focus is simple: build meaningful technology, create real value, and turn possibilities into reality.</p><span>02 — ABOUT YARED</span></div>
+        <p class="eyebrow" data-cms="about.eyebrow">A PURPOSE-DRIVEN APPROACH</p><h2><span data-cms="about.heading">Meaningful technology.</span><br><em data-cms="about.heading_em">Real-world impact.</em></h2><div class="statement-bottom"><p data-cms="about.body">My focus is simple: build meaningful technology, create real value, and turn possibilities into reality.</p><span>02 — ABOUT YARED</span></div>
       </div>
       <figure class="s7-figure s7-fig-b" data-s7-figure>
         <div class="s7-fig-stage">
           <span class="s7-fig-ring r1" aria-hidden="true"></span><span class="s7-fig-ring r2" aria-hidden="true"></span>
           <div class="s7-fig-card">
-            <img src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" loading="lazy" decoding="async" onerror="this.style.display='none';this.parentElement.classList.add('is-pending')">
+            <img data-cms-src="media.portrait_about" src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" loading="lazy" decoding="async" onerror="this.style.display='none';this.parentElement.classList.add('is-pending')">
             <div class="s7-pending"><b>Y.</b><small>PORTRAIT PENDING</small><span>Awaiting the approved photo</span></div>
             <i class="s7-sheen" aria-hidden="true"></i>
           </div>
@@ -111,18 +113,18 @@
       <div class="s7-reel-sticky">
         <div class="s7-reel-meta" aria-hidden="true"><span class="s7-reel-hint"></span><span class="s7-reel-bar"><i></i></span></div>
         <div class="project-grid s7-reel-track">
-      <article class="project-card project-featured" data-project-category="ai" data-accent="aurex"><div class="project-art art-aurex"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="art-orb"></span><span class="art-word">AUREX<span>AI</span></span><small>INTELLIGENCE / ASSISTANT</small></div><div class="project-meta"><div><span class="project-type">AI ASSISTANT CONCEPT</span><h3>AUREX AI</h3><p>An AI assistant project exploring intelligent interaction and digital productivity.</p></div><span class="project-number">01</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
-      <article class="project-card" data-project-category="business" data-accent="derya"><div class="project-art art-derya"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="art-symbol">D.</span><small>CAPITAL / DIGITAL SYSTEMS</small></div><div class="project-meta"><div><span class="project-type">BUSINESS TECHNOLOGY</span><h3>DERYA CAPITAL</h3><p>A business and technology initiative.</p></div><span class="project-number">02</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
-      <article class="project-card" data-project-category="software" data-accent="rent"><div class="project-art art-rent"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="rent-window">RENT<br><b>MANAGER</b><i>PROPERTY OPERATIONS</i></span></div><div class="project-meta"><div><span class="project-type">MANAGEMENT SOFTWARE</span><h3>Rent Manager</h3><p>A property-management software project.</p></div><span class="project-number">03</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
-      <article class="project-card" data-project-category="ai" data-accent="pulse"><div class="project-art art-pulse"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="pulse-line">⌁</span><small>MARKET / ANALYTICS</small></div><div class="project-meta"><div><span class="project-type">TRADING TECHNOLOGY</span><h3>DERYA PULSE AI</h3><p>An AI-assisted trading technology project.</p></div><span class="project-number">04</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
+      <article class="project-card project-featured" data-project-category="ai" data-accent="aurex" data-slug="aurex-ai"><div class="project-art art-aurex"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="art-orb"></span><span class="art-word">AUREX<span>AI</span></span><small>INTELLIGENCE / ASSISTANT</small></div><div class="project-meta"><div><span class="project-type">AI ASSISTANT CONCEPT</span><h3>AUREX AI</h3><p>An AI assistant project exploring intelligent interaction and digital productivity.</p></div><span class="project-number">01</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
+      <article class="project-card" data-project-category="business" data-accent="derya" data-slug="derya-capital"><div class="project-art art-derya"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="art-symbol">D.</span><small>CAPITAL / DIGITAL SYSTEMS</small></div><div class="project-meta"><div><span class="project-type">BUSINESS TECHNOLOGY</span><h3>DERYA CAPITAL</h3><p>A business and technology initiative.</p></div><span class="project-number">02</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
+      <article class="project-card" data-project-category="software" data-accent="rent" data-slug="rent-manager"><div class="project-art art-rent"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="rent-window">RENT<br><b>MANAGER</b><i>PROPERTY OPERATIONS</i></span></div><div class="project-meta"><div><span class="project-type">MANAGEMENT SOFTWARE</span><h3>Rent Manager</h3><p>A property-management software project.</p></div><span class="project-number">03</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
+      <article class="project-card" data-project-category="ai" data-accent="pulse" data-slug="derya-pulse-ai"><div class="project-art art-pulse"><span class="s7-plane p1" aria-hidden="true"></span><span class="s7-plane p2" aria-hidden="true"></span><span class="pulse-line">⌁</span><small>MARKET / ANALYTICS</small></div><div class="project-meta"><div><span class="project-type">TRADING TECHNOLOGY</span><h3>DERYA PULSE AI</h3><p>An AI-assisted trading technology project.</p></div><span class="project-number">04</span></div><span class="status-note">PROJECT SHOWCASE · DEMO LINK TO BE ADDED</span></article>
         </div>
       </div>
     </div>
     <div class="external-demo"><div><span class="project-type">EXTERNAL DESIGN RESOURCE</span><h3>Design Intelligence Demo</h3><p>Explore UI styles, palettes, typography and UX inspiration on the original resource.</p></div><a class="button button-outline" href="https://www.uupm.cc/#styles" target="_blank" rel="noopener noreferrer">View external demo ↗</a></div></section>
 
     <!-- Scene 5: technology and capabilities -->
-    <section class="expertise section" id="expertise" data-scene="expertise"><div class="section-heading"><div><p class="eyebrow">WHAT I BRING TO THE TABLE</p><h2>Ideas, engineered<br><em>into possibility.</em></h2></div><span class="section-index">04 / EXPERTISE</span></div><div class="expertise-grid"><article><span>01</span><h3>AI & Intelligent Systems</h3><p>AI-powered experiences, assistants and practical intelligent workflows.</p></article><article><span>02</span><h3>Software & Web Development</h3><p>Digital products and responsive web experiences built around real needs.</p></article><article><span>03</span><h3>Automation & Integration</h3><p>Connected systems that reduce repetitive work and improve operations.</p></article><article><span>04</span><h3>Digital Business Solutions</h3><p>Technology-led solutions designed to create value for businesses.</p></article></div></section>
-    <section class="services section" id="services" data-scene="services"><div class="section-heading"><div><p class="eyebrow">HOW I CAN HELP</p><h2>Technology with<br><em>purpose.</em></h2></div><span class="section-index">05 / SERVICES</span></div><div class="service-list"><div><span>01</span><h3>AI Software & Assistants</h3><b>↗</b></div><div><span>02</span><h3>Websites & Digital Products</h3><b>↗</b></div><div><span>03</span><h3>Business Automation</h3><b>↗</b></div><div><span>04</span><h3>Digital Solutions & Integration</h3><b>↗</b></div></div></section>
+    <section class="expertise section" id="expertise" data-scene="expertise"><div class="section-heading"><div><p class="eyebrow">WHAT I BRING TO THE TABLE</p><h2>Ideas, engineered<br><em>into possibility.</em></h2></div><span class="section-index">04 / EXPERTISE</span></div><div class="expertise-grid"><article><span>01</span><h3 data-cms="expertise.1_title">AI & Intelligent Systems</h3><p data-cms="expertise.1_desc">AI-powered experiences, assistants and practical intelligent workflows.</p></article><article><span>02</span><h3 data-cms="expertise.2_title">Software & Web Development</h3><p data-cms="expertise.2_desc">Digital products and responsive web experiences built around real needs.</p></article><article><span>03</span><h3 data-cms="expertise.3_title">Automation & Integration</h3><p data-cms="expertise.3_desc">Connected systems that reduce repetitive work and improve operations.</p></article><article><span>04</span><h3 data-cms="expertise.4_title">Digital Business Solutions</h3><p data-cms="expertise.4_desc">Technology-led solutions designed to create value for businesses.</p></article></div></section>
+    <section class="services section" id="services" data-scene="services"><div class="section-heading"><div><p class="eyebrow">HOW I CAN HELP</p><h2>Technology with<br><em>purpose.</em></h2></div><span class="section-index">05 / SERVICES</span></div><div class="service-list"><div><span>01</span><h3 data-cms="services.1_title">AI Software & Assistants</h3><p class="s8-service-desc" data-cms="services.1_desc" hidden></p><b>↗</b></div><div><span>02</span><h3 data-cms="services.2_title">Websites & Digital Products</h3><p class="s8-service-desc" data-cms="services.2_desc" hidden></p><b>↗</b></div><div><span>03</span><h3 data-cms="services.3_title">Business Automation</h3><p class="s8-service-desc" data-cms="services.3_desc" hidden></p><b>↗</b></div><div><span>04</span><h3 data-cms="services.4_title">Digital Solutions & Integration</h3><p class="s8-service-desc" data-cms="services.4_desc" hidden></p><b>↗</b></div></div></section>
     <section class="capability-previews section" aria-labelledby="capability-heading" data-scene="previews">
       <div class="section-heading">
         <div><p class="eyebrow">IN DEVELOPMENT</p><h2 id="capability-heading">Future <em>capabilities.</em></h2></div>
@@ -148,22 +150,68 @@
       <figure class="s7-figure s7-fig-c" data-s7-figure>
         <div class="s7-fig-stage">
           <div class="s7-fig-card">
-            <img src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" loading="lazy" decoding="async" onerror="this.style.display='none';this.parentElement.classList.add('is-pending')">
+            <img data-cms-src="media.portrait_profile" src="assets/yared-portrait.jpg" alt="Portrait of Yared" width="800" height="1000" loading="lazy" decoding="async" onerror="this.style.display='none';this.parentElement.classList.add('is-pending')">
             <div class="s7-pending"><b>Y.</b><small>PORTRAIT PENDING</small><span>Awaiting the approved photo</span></div>
             <i class="s7-sheen" aria-hidden="true"></i>
           </div>
         </div>
       </figure>
       <div class="s7-profile-copy">
-        <p class="eyebrow"><i></i> THE PERSON BEHIND THE WORK</p>
-        <h2 id="profile-heading">Yared.<br><em>Founder &amp; builder.</em></h2>
-        <p>I transform ambitious ideas into intelligent software, AI-powered systems, and digital solutions that solve real-world problems.</p>
+        <p class="eyebrow"><i></i> <span data-cms="profile.eyebrow">THE PERSON BEHIND THE WORK</span></p>
+        <h2 id="profile-heading"><span data-cms="profile.heading">Yared.</span><br><em data-cms="profile.heading_em">Founder &amp; builder.</em></h2>
+        <p data-cms="profile.body">I transform ambitious ideas into intelligent software, AI-powered systems, and digital solutions that solve real-world problems.</p>
         <span class="section-index">07 / PROFILE</span>
       </div>
     </section>
 
+    <!-- Booking + private feedback. Forms stay disabled and labelled NOT LIVE until config.js is filled in and the
+         functions answer a health check (cms-public.js). They never claim anything the server has not confirmed. -->
+    <section class="s8-forms section" id="book" aria-labelledby="s8-book-title">
+      <div class="section-heading"><div><p class="eyebrow">WORK WITH ME</p><h2 id="s8-book-title">Start a <em>project.</em></h2></div></div>
+      <div class="s8-grid">
+        <form class="s8-card" id="s8-booking" novalidate aria-labelledby="s8-booking-h">
+          <p class="capability-status s8-state" data-s8-state><span aria-hidden="true"></span> NOT LIVE</p>
+          <h3 id="s8-booking-h">Book a project</h3>
+          <p class="s8-note" data-s8-note>The booking inbox is not connected yet, so this form cannot send anything. Please use Email, WhatsApp or Telegram below.</p>
+          <fieldset class="s8-fields" data-s8-fields disabled>
+            <label>Your name<input name="name" autocomplete="name" maxlength="100" required></label>
+            <label>Business <small>(optional)</small><input name="business" autocomplete="organization" maxlength="120"></label>
+            <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" inputmode="email"></label>
+            <label>WhatsApp <small>(with country code)</small><input name="whatsapp" type="tel" autocomplete="tel" maxlength="24" placeholder="+251…" inputmode="tel"></label>
+            <label>Service<select name="service" required>
+              <option value="">Choose one</option><option value="website">Website / digital product</option>
+              <option value="ai-assistant">AI software / assistant</option><option value="automation">Business automation</option>
+              <option value="software">Software / integration</option><option value="other">Something else</option></select></label>
+            <label>Budget <small>(optional)</small><select name="budget"><option value="">Prefer not to say</option>
+              <option value="under-500">Under $500</option><option value="500-1500">$500–1,500</option>
+              <option value="1500-5000">$1,500–5,000</option><option value="5000-plus">$5,000+</option><option value="unsure">Not sure yet</option></select></label>
+            <label class="s8-wide">What do you need?<textarea name="description" rows="5" maxlength="2000" required></textarea></label>
+            <div class="s8-hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+            <p class="s8-hint s8-wide">Give an email or a WhatsApp number so I can reply.</p>
+            <button class="button button-gold s8-submit" type="submit">Send request</button>
+          </fieldset>
+          <p class="s8-status" role="status" aria-live="polite" data-s8-status></p>
+        </form>
+        <form class="s8-card" id="s8-feedback" novalidate aria-labelledby="s8-feedback-h">
+          <p class="capability-status s8-state" data-s8-state><span aria-hidden="true"></span> NOT LIVE</p>
+          <h3 id="s8-feedback-h">Private feedback</h3>
+          <p class="s8-note" data-s8-note>Feedback is not connected yet. It will be private and is never shown on this site.</p>
+          <fieldset class="s8-fields" data-s8-fields disabled>
+            <label>Name <small>(optional)</small><input name="name" autocomplete="name" maxlength="80"></label>
+            <label>Email <small>(optional, only if you want a reply)</small><input name="email" type="email" autocomplete="email" maxlength="254" inputmode="email"></label>
+            <label>Topic<select name="category" required><option value="general">General</option><option value="design">Design</option>
+              <option value="bug">Something is broken</option><option value="idea">An idea</option><option value="praise">Kind words</option><option value="other">Other</option></select></label>
+            <label class="s8-wide">Your message<textarea name="message" rows="5" maxlength="2000" required></textarea></label>
+            <div class="s8-hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+            <button class="button button-outline s8-submit" type="submit">Send feedback</button>
+          </fieldset>
+          <p class="s8-status" role="status" aria-live="polite" data-s8-status></p>
+        </form>
+      </div>
+    </section>
+
     <!-- Scene 7: closing -->
-    <section class="contact section" id="contact" data-scene="contact"><p class="eyebrow">HAVE AN IDEA IN MIND?</p><h2>Let's build<br><em>what's next.</em></h2><p>Have a project, a challenge or an ambitious idea? Let's start a conversation.</p><div class="contact-actions"><a class="button button-gold" href="mailto:yed024691@gmail.com">Email ↗</a><a class="button button-outline" href="https://wa.me/251902389561" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div><div class="social-links"><a href="https://t.me/Deryacapital" target="_blank" rel="noopener">Telegram</a><a href="https://instagram.com/Derya_Capital" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@derya_capital444" target="_blank" rel="noopener">TikTok</a></div></section>
+    <section class="contact section" id="contact" data-scene="contact"><p class="eyebrow" data-cms="contact.eyebrow">HAVE AN IDEA IN MIND?</p><h2><span data-cms="contact.heading">Let's build</span><br><em data-cms="contact.heading_em">what's next.</em></h2><p data-cms="contact.body">Have a project, a challenge or an ambitious idea? Let's start a conversation.</p><div class="contact-actions"><a class="button button-gold" href="mailto:yed024691@gmail.com" data-cms-href="contact.email" data-contact="email">Email ↗</a><a class="button button-outline" href="https://wa.me/251902389561" data-cms-href="contact.whatsapp" data-contact="whatsapp" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div><div class="social-links"><a href="https://t.me/Deryacapital" data-cms-href="contact.telegram" data-contact="telegram" target="_blank" rel="noopener">Telegram</a><a href="https://instagram.com/Derya_Capital" data-cms-href="contact.instagram" data-contact="instagram" target="_blank" rel="noopener">Instagram</a><a href="https://www.tiktok.com/@derya_capital444" data-cms-href="contact.tiktok" data-contact="tiktok" target="_blank" rel="noopener">TikTok</a></div></section>
   </main>
   <footer><a class="wordmark" href="#home" aria-label="DERYA home">DERYA<span>.</span></a><span>© <span id="year"></span> Think Beyond. Build Different. Create Impact.</span><a href="#home">BACK TO TOP ↑</a></footer>
   <script>window.__S6_PALETTE=[{c:'236,232,255',m:'138,125,255',e:'110,96,255'},{c:'225,255,250',m:'70,227,209',e:'30,170,160'},{c:'255,238,226',m:'255,138,92',e:'220,90,60'}];</script>
@@ -172,4 +220,6 @@
   <script src="stage5.js"></script>
   <script src="stage6.js"></script>
   <script src="stage7.js"></script>
+  <script src="config.js"></script>
+  <script src="cms-public.js"></script>
 </body></html>

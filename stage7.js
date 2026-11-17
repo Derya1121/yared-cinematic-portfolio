@@ -235,7 +235,7 @@
     // filter changes hide / show cards: re-measure after the layout settles
     if ('MutationObserver' in window) {
       new MutationObserver(function () { setTimeout(function () { layout(); if (window.__s6Remeasure) window.__s6Remeasure(); }, 30); })
-        .observe(track, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+        .observe(track, { attributes: true, attributeFilter: ['hidden'], subtree: true, childList: true });
     }
     window.addEventListener('load', layout);
     layout();

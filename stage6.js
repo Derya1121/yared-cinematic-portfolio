@@ -279,7 +279,8 @@
      ====================================================================== */
   function startTilt() {
     if (reduced) return;
-    Array.prototype.forEach.call(document.querySelectorAll('.project-card'), function (card) {
+    function bind(card) {
+      if (card.__s6Tilt) return; card.__s6Tilt = 1;   /* Stage 8: safe to call again for CMS-added cards */
       var raf = 0, nx = 0, ny = 0, pressed = false;
       function paint() {
         raf = 0;
@@ -305,7 +306,9 @@
       card.addEventListener('pointermove', move);
       card.addEventListener('pointerdown', function (e) { if (e.pointerType === 'touch') { pressed = true; move(e); } });
       ['pointerleave', 'pointerup', 'pointercancel'].forEach(function (n) { card.addEventListener(n, rest); });
-    });
+    }
+    window.__s6BindTilt = bind;
+    Array.prototype.forEach.call(document.querySelectorAll('.project-card'), bind);
   }
 
   /* ======================================================================

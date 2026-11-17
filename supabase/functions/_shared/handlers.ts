@@ -11,6 +11,10 @@ type Handler = (req: Request) => Promise<Response>;
 async function guarded(req: Request, deps: Deps, run: (body: Record<string, unknown>, cors: Record<string, string>) => Promise<Response>): Promise<Response> {
   const cors = corsHeaders(req, deps);
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  // Side-effect-free probe so the website can show "live" only when the function really answers.
+  if (req.method === "GET" && new URL(req.url).searchParams.has("health") && originAllowed(req, deps)) {
+    return json({ ok: true }, 200, cors);
+  }
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, cors);
   if (!originAllowed(req, deps)) return json({ ok: false, error: "origin_not_allowed" }, 403, cors);
   const body = await readJson(req);

@@ -39,6 +39,13 @@ test("CORS: unlisted origin is refused; listed origin is echoed; no wildcard", a
   assert.equal((await submitBooking(none.deps)(post(booking()))).status, 403);
 });
 
+test("health probe: side-effect free, only for allowed origins", async () => {
+  const m = make(); const h = submitBooking(m.deps);
+  const ok = await h(new Request("https://f.example/fn?health=1", { method: "GET", headers: { origin: ORIGIN } }));
+  assert.equal(ok.status, 200); assert.equal(m.calls.length, 0);
+  assert.equal((await h(new Request("https://f.example/fn?health=1", { method: "GET", headers: { origin: "https://evil.example" } }))).status, 405);
+});
+
 test("method/body hygiene: OPTIONS 204, GET 405, bad JSON 400, wrong type 415, oversize 413", async () => {
   const { deps } = make(); const h = submitBooking(deps);
   assert.equal((await h(new Request("https://f.example", { method: "OPTIONS", headers: { origin: ORIGIN } }))).status, 204);
