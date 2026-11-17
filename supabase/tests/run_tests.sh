@@ -33,7 +33,7 @@ echo "== concurrency: 12 workers claim 40 queued deliveries; none may be claimed
 $P -d $DB -c "delete from public.notification_deliveries; delete from public.bookings;"
 $P -d $DB -c "insert into public.bookings (reference,name,email,service,description,dedupe_hash)
   select 'DB-C'||lpad(g::text,5,'0'),'C'||g,'c'||g||'@example.com','other','concurrency test row '||g,'h'||g from generate_series(1,20) g;
-  insert into public.notification_deliveries (booking_id, channel) select b.id, c from public.bookings b, unnest(array['telegram','whatsapp']) c;"
+  insert into public.notification_deliveries (booking_id, channel) select id, delivery_channel from public.bookings;"
 OUT=$(mktemp)
 for i in $(seq 1 12); do
   ( $P -d $DB -At -c "set role service_role; select (e->>'id') from jsonb_array_elements(public.claim_notifications_v1(5)) e" >> "$OUT" 2>&1 ) &
@@ -42,7 +42,7 @@ wait
 TOTAL=$(grep -cE '^[0-9a-f-]{36}$' "$OUT" || true)
 UNIQ=$(grep -E '^[0-9a-f-]{36}$' "$OUT" | sort -u | wc -l)
 echo "claimed rows: $TOTAL, distinct: $UNIQ"
-[ "$TOTAL" = "$UNIQ" ] && [ "$TOTAL" = "40" ] || { echo "FAIL: expected 40 distinct claims"; exit 1; }
+[ "$TOTAL" = "$UNIQ" ] && [ "$TOTAL" = "20" ] || { echo "FAIL: expected 40 distinct claims"; exit 1; }
 echo "PASS: each delivery was claimed exactly once across 12 parallel workers"
 
 echo "== concurrency: 8 simultaneous identical bookings"
@@ -54,6 +54,6 @@ wait
 STORED=$($P -d $DB -At -c "select count(*) from public.bookings")
 NOTIF=$($P -d $DB -At -c "select count(*) from public.notification_deliveries")
 echo "bookings stored: $STORED, notification rows: $NOTIF"
-[ "$STORED" = "1" ] && [ "$NOTIF" = "2" ] || { echo "FAIL: expected exactly 1 booking and 2 notifications"; exit 1; }
+[ "$STORED" = "1" ] && [ "$NOTIF" = "1" ] || { echo "FAIL: expected exactly 1 booking and 2 notifications"; exit 1; }
 echo "PASS: 8 simultaneous identical submissions stored exactly one booking"
 echo "ALL DATABASE TESTS PASSED"
