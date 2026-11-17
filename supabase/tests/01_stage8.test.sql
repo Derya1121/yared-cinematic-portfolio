@@ -349,7 +349,7 @@ commit;
 begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 select t.ok($q$select public.admin_overview()$q$, 'H29 owner can open the overview');
 select t.eq($q$select (public.admin_overview()->'bookings'->>'contacted')$q$, '1', 'H30 overview counts bookings by status');
-select t.eq($q$select (public.admin_overview()->'notifications'->>'whatsapp:dead')$q$, '2', 'H31 overview shows dead/failed deliveries');
+select t.eq($q$select (public.admin_overview()->'notifications'->>'whatsapp:dead')$q$, '1', 'H31 overview shows the remaining dead WhatsApp delivery');
 select t.eq($q$select public.admin_retry_notification((select id from public.notification_deliveries where status = 'dead' limit 1))::text$q$, 'true', 'H32 owner can re-queue a dead delivery');
 select t.eq($q$select public.admin_retry_notification((select id from public.notification_deliveries where status = 'sent' limit 1))::text$q$, 'false', 'H33 a delivered/sent message cannot be re-queued (no double notifications)');
 select t.denied($q$insert into public.admin_users (user_id, role) values ('aaaaaaaa-0000-0000-0000-000000000003','owner')$q$, 'H34 owner cannot add admins through the API either');
