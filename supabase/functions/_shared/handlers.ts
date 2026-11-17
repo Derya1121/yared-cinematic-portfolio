@@ -34,11 +34,15 @@ export function submitBooking(deps: Deps): Handler {
       // Pretend success so bots learn nothing. Nothing is stored.
       return json({ ok: true, saved: true, reference: "DB-00000000", duplicate: false }, 200, cors);
     }
+    const deliveryChannel = str(b.delivery_channel, 20);
+    if (deliveryChannel !== "telegram" && deliveryChannel !== "whatsapp") {
+      return json({ ok: false, error: "invalid", field: "delivery_channel", reason: "invalid" }, 422, cors);
+    }
     const ip = await ipHash(req, deps);
     if (await rateLimited(deps, `booking:${ip}`, 5, 3600)) return json({ ok: false, error: "rate_limited" }, 429, cors);
     const r = await deps.rpc("create_booking_v1", {
       p: {
-        name: str(b.name, 200), business: str(b.business, 200), email: str(b.email, 300), whatsapp: str(b.whatsapp, 40),
+        name: str(b.name, 200), business: str(b.business, 200), email: str(b.email, 300), whatsapp: str(b.whatsapp, 40), delivery_channel: deliveryChannel,
         service: str(b.service, 40), budget: str(b.budget, 40), description: str(b.description, 4000),
       },
       p_ip_hash: ip, p_client_key: str(b.client_key, 64) || null,
