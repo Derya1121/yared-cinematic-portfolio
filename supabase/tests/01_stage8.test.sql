@@ -140,7 +140,7 @@ begin; select t.as_service();
 select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","business":"Test Co","email":"Abel@Example.com","whatsapp":"+251 91 234 5678","service":"website","budget":"500-1500","description":"I need a new website for my shop."}'::jsonb, 'iphash1', 'clientkey0001'))->>'ok'$q$, 'true', 'D1 valid booking is stored');
 select t.eq($q$select reference ~ '^DB-[0-9A-F]{8}$' from public.bookings$q$, 'true', 'D2 booking gets a DB-XXXXXXXX reference');
 select t.eq($q$select email || '|' || whatsapp from public.bookings$q$, 'abel@example.com|+251912345678', 'D3 email lower-cased, whatsapp normalised');
-select t.rows('select 1 from public.notification_deliveries where status = $pending$', 1, 'D4 only the selected Telegram delivery row is created, pending');
+select t.rows('select 1 from public.notification_deliveries where status = $$pending$$', 1, 'D4 only the selected Telegram delivery row is created, pending');
 select t.eq($q$select (public.create_booking_v1('{"name":"Abel Tester","email":"abel@example.com","whatsapp":"+251912345678","service":"website","description":"I  need a NEW website   for my shop."}'::jsonb))->>'duplicate'$q$, 'true', 'D5 same request re-sent (different case/spacing) is deduplicated');
 select t.eq($q$select (public.create_booking_v1('{"name":"Other","email":"zzz@example.com","service":"other","description":"completely different text here"}'::jsonb, null, 'clientkey0001'))->>'duplicate'$q$, 'true', 'D6 the same client_key is idempotent');
 select t.rows('select 1 from public.bookings', 1, 'D7 only one booking row exists after 3 submissions');
