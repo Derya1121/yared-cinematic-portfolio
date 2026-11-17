@@ -43,6 +43,25 @@ Create a private bot with BotFather, open the bot from the owner Telegram accoun
 
 Use the official WhatsApp Business Cloud API. The business phone number, access token, phone-number ID and an approved outbound message template are required. Configure the webhook and verify delivery receipts. A normal wa.me link does not provide automatic server-side delivery.
 
+## Automatic notification retries (required for live delivery)
+
+A newly saved booking triggers an immediate notification attempt. The retry queue also needs a scheduler; the Edge Function does not schedule itself.
+
+After deploying `process-notifications` and setting the server-side `NOTIFY_CRON_SECRET`, configure Supabase Cron or a trusted server-side scheduler to send a **POST every minute** to:
+
+`https://<PROJECT_REF>.supabase.co/functions/v1/process-notifications`
+
+Request headers:
+
+- `content-type: application/json`
+- `x-cron-secret: <the exact NOTIFY_CRON_SECRET value>`
+
+Request body: `{}`
+
+Keep the secret in the scheduler's protected secret store. Never put it in website JavaScript, a public GitHub file, a browser request, or a URL. Do not use the service-role key as the scheduler credential. The endpoint rejects requests without the matching secret and processes a bounded batch of due notifications.
+
+Before public activation, test a failed delivery in the dedicated development project and verify that the scheduled worker retries it, updates its status, and stops at the configured attempt limit. WhatsApp final delivery/read status is still confirmed separately by the signed webhook.
+
 ## Booking delivery selection
 
 The public booking form requires the customer to choose Telegram or WhatsApp. The Edge Function rejects missing/unsupported choices, and the database stores the selected channel and creates one delivery row for that channel only. The database column has a Telegram default for internal compatibility, but the public Edge Function does not accept a missing choice. Verify this behaviour with the SQL and unit tests before deployment.
