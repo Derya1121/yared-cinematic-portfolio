@@ -19,6 +19,8 @@ jobs:
           node --check cms-boot.js
       - name: Run admin static security checks
         run: node --test tests/admin-static.test.js
+      - name: Run Edge Function unit tests (fakes only)
+        run: node --test --experimental-strip-types supabase/functions/tests/handlers.test.ts
 
   browser:
     runs-on: ubuntu-latest
@@ -38,6 +40,7 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sleep 2
           SITE=http://localhost:8765/index.html node tests/stage8-public.test.js
+          SITE_ROOT=http://localhost:8765 node tests/admin-access.test.js
 
   database:
     runs-on: ubuntu-latest

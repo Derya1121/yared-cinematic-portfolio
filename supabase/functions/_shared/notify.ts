@@ -64,6 +64,11 @@ export async function sendTelegram(deps: Deps, b: BookingForMessage): Promise<Se
 }
 
 export async function sendWhatsApp(deps: Deps, b: BookingForMessage): Promise<SendResult> {
+  // Cost gate: WhatsApp business-initiated messages can be billed by Meta. Nothing is sent unless the owner has
+  // explicitly set WHATSAPP_PAID_MESSAGING_APPROVED=true after confirming the costs. Telegram is the free channel.
+  if (deps.env("WHATSAPP_PAID_MESSAGING_APPROVED") !== "true") {
+    return { ok: false, notConfigured: true, error: "WhatsApp sending is disabled until paid messaging is approved by the owner" };
+  }
   const tokenV = deps.env("WHATSAPP_ACCESS_TOKEN"); const phoneId = deps.env("WHATSAPP_PHONE_NUMBER_ID");
   const to = deps.env("WHATSAPP_OWNER_NUMBER"); const tpl = deps.env("WHATSAPP_TEMPLATE_NAME");
   if (!tokenV || !phoneId || !to || !tpl) {

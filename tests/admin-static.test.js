@@ -49,3 +49,10 @@ test('CMS draft saving iterates over every text field and image input',()=>{
   assert.match(js,/for\s*\(const el of \$\$\('\[data-content-image\]'\)\)/);
   assert.doesNotMatch(js,/for\s*\(const el of \$\('\[data-content-(?:key|image)\]'\)\)/);
 });
+
+test('admin page ships a strict CSP and no inline script or style (so the CSP cannot be bypassed)', () => {
+  assert.match(html, /Content-Security-Policy/);
+  assert.match(html, /script-src 'self'/);
+  assert.doesNotMatch(html, /unsafe-inline|unsafe-eval/);
+  assert.doesNotMatch(html, /\son\w+=|<script>|\sstyle=/i);
+});

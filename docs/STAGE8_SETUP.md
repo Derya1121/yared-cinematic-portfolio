@@ -1,6 +1,6 @@
 # Stage 8 setup and safety notes
 
-**Status: prepared only. No Supabase project has been created or modified. No migration or Edge Function has been deployed.**
+**Status (2026-11-18): the owner reports a dedicated dev project `lyeccydsfwjtxhpkhukh` exists with the migration applied and five functions deployed. That has NOT been independently verified from this repository's tooling (the assistant's Supabase connector has no access to that project). Owner account, notification secrets and the retry schedule are still pending, and no notification channel may be called live until a real test message is received.**
 
 ## Repository
 
@@ -28,6 +28,7 @@ Configure these in the Supabase project's server-side Edge Function secrets only
 - `ALLOWED_ORIGINS` — exact portfolio origin(s), comma-separated.
 - `IP_HASH_SALT` — long random secret used for daily rotating privacy hashes.
 - `TELEGRAM_BOT_TOKEN` and `TELEGRAM_OWNER_CHAT_ID`.
+- `WHATSAPP_PAID_MESSAGING_APPROVED` — leave **unset** (or anything other than the exact text `true`). While it is not `true`, no WhatsApp request is ever made, even if every other WhatsApp secret is present; such bookings are recorded as `not_configured` in the admin inbox. Set it to `true` only after the owner has confirmed Meta's current pricing and approved the cost in writing.
 - `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OWNER_NUMBER`.
 - `WHATSAPP_TEMPLATE_NAME` and optional `WHATSAPP_TEMPLATE_LANG`.
 - `WHATSAPP_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN` for the signed webhook.
@@ -62,9 +63,12 @@ Keep the secret in the scheduler's protected secret store. Never put it in websi
 
 Before public activation, test a failed delivery in the dedicated development project and verify that the scheduled worker retries it, updates its status, and stops at the configured attempt limit. WhatsApp final delivery/read status is still confirmed separately by the signed webhook.
 
-## Booking delivery selection
+## Booking delivery selection (approved policy, 2026-11-18)
 
-The public booking form requires the customer to choose Telegram or WhatsApp. The Edge Function rejects missing/unsupported choices, and the database stores the selected channel and creates one delivery row for that channel only. The database column has a Telegram default for internal compatibility, but the public Edge Function does not accept a missing choice. Verify this behaviour with the SQL and unit tests before deployment.
+- The customer chooses Telegram **or** WhatsApp on the booking form. The Edge Function rejects a missing/unknown choice, and the database stores it and creates exactly one delivery row for that channel (`unique (booking_id, channel)`), so a booking can never notify twice.
+- **Telegram is the free operational channel** and works as soon as `TELEGRAM_BOT_TOKEN` and `TELEGRAM_OWNER_CHAT_ID` are set.
+- **WhatsApp is prepared but cost-gated** (see `WHATSAPP_PAID_MESSAGING_APPROVED` above). Until approved, a booking that chose WhatsApp is still saved and shown in the admin inbox with a `not_configured` delivery; nothing is sent. Re-queue it from the admin once approved.
+- Each channel's result is recorded on its own; "sent" means the provider accepted the message, and WhatsApp "delivered" only comes from the signed webhook. Telegram never reports delivery.
 
 ## Test and deployment gates
 

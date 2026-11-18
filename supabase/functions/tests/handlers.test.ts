@@ -127,7 +127,7 @@ test("analytics: DNT/GPC respected, invalid events rejected, no raw IP/UA stored
 // ---------------- notifications ----------------
 const B = { reference: "DB-ABCDEF12", name: "Abel <b>X</b>", business: "Shop & Co", email: "a@b.co", whatsapp: "+251912345678", service: "website", budget: "500-1500", description: "Need <script>alert(1)</script> a site\nplease" };
 const tgEnv = { TELEGRAM_BOT_TOKEN: "123456:SECRET-TOKEN", TELEGRAM_OWNER_CHAT_ID: "987654321" };
-const waEnv = { WHATSAPP_ACCESS_TOKEN: "EAAG-SECRET", WHATSAPP_PHONE_NUMBER_ID: "1122334455", WHATSAPP_OWNER_NUMBER: "+251 90 238 9561", WHATSAPP_TEMPLATE_NAME: "new_booking", WHATSAPP_TEMPLATE_LANG: "en" };
+const waEnv = { WHATSAPP_ACCESS_TOKEN: "EAAG-SECRET", WHATSAPP_PHONE_NUMBER_ID: "1122334455", WHATSAPP_OWNER_NUMBER: "+251 90 238 9561", WHATSAPP_TEMPLATE_NAME: "new_booking", WHATSAPP_TEMPLATE_LANG: "en", WHATSAPP_PAID_MESSAGING_APPROVED: "true" };
 
 test("Telegram text escapes HTML; WhatsApp params are single-line", () => {
   const t = telegramText(B);
@@ -207,4 +207,46 @@ test("WhatsApp webhook: verify handshake, signature check, receipts forwarded", 
   assert.deepEqual(m.calls.map((c) => [c.args.p_provider_id, c.args.p_status]), [["wamid.XYZ", "delivered"], ["wamid.ABC", "failed"]]);
   const noSecret = make({ env: { WHATSAPP_VERIFY_TOKEN: env.WHATSAPP_VERIFY_TOKEN } });
   assert.equal((await whatsappWebhook(noSecret.deps)(new Request("https://f.example", { method: "POST", body, headers: { "x-hub-signature-256": sig } }))).status, 403);
+});
+
+// ---------------- approved channel policy: one channel per booking, WhatsApp cost-gated ----------------
+const claimRows = (rows: unknown[]) => (fn: string) => ({ data: fn === "claim_notifications_v1" ? rows : "ok", error: null });
+const tgOk = () => new Response(JSON.stringify({ ok: true, result: { message_id: 9 } }), { status: 200 });
+const waOk = () => new Response(JSON.stringify({ messages: [{ id: "wamid.Z" }] }), { status: 200 });
+
+test("Telegram-selected booking: only Telegram is contacted, WhatsApp is never touched", async () => {
+  const m = make({ env: { ...tgEnv, ...waEnv }, rpc: claimRows([{ id: "t1", channel: "telegram", booking: B }]), fetch: (u: string) => u.includes("telegram") ? tgOk() : waOk() });
+  assert.deepEqual(await dispatchNotifications(m.deps, 5), { claimed: 1, sent: 1, failed: 0 });
+  assert.equal(m.fetches.length, 1); assert.match(m.fetches[0].url, /api\.telegram\.org/);
+});
+
+test("WhatsApp-selected booking: only WhatsApp is contacted, Telegram is never touched", async () => {
+  const m = make({ env: { ...tgEnv, ...waEnv }, rpc: claimRows([{ id: "w1", channel: "whatsapp", booking: B }]), fetch: (u: string) => u.includes("telegram") ? tgOk() : waOk() });
+  assert.deepEqual(await dispatchNotifications(m.deps, 5), { claimed: 1, sent: 1, failed: 0 });
+  assert.equal(m.fetches.length, 1); assert.match(m.fetches[0].url, /graph\.facebook\.com/);
+});
+
+test("WhatsApp is cost-gated: credentials alone send nothing; flag must be exactly 'true'", async () => {
+  for (const flag of [undefined, "", "false", "TRUE", "1", "yes"]) {
+    const env: Record<string, string> = { ...waEnv }; if (flag === undefined) delete env.WHATSAPP_PAID_MESSAGING_APPROVED; else env.WHATSAPP_PAID_MESSAGING_APPROVED = flag;
+    const m = make({ env, rpc: claimRows([{ id: "w1", channel: "whatsapp", booking: B }]), fetch: waOk });
+    await dispatchNotifications(m.deps, 5);
+    assert.equal(m.fetches.length, 0, `no request may leave when flag=${String(flag)}`);
+    const c = m.calls.find((x) => x.fn === "complete_notification_v1")!.args;
+    assert.equal(c.p_ok, false); assert.equal(c.p_not_configured, true); assert.match(String(c.p_error), /disabled/);
+  }
+});
+
+test("Telegram keeps working while WhatsApp is disabled (free channel is independent)", async () => {
+  const env = { ...tgEnv, ...waEnv, WHATSAPP_PAID_MESSAGING_APPROVED: "false" };
+  const m = make({ env, rpc: claimRows([{ id: "t1", channel: "telegram", booking: B }]), fetch: tgOk });
+  assert.deepEqual(await dispatchNotifications(m.deps, 5), { claimed: 1, sent: 1, failed: 0 });
+});
+
+test("no duplicate sends: an empty claim sends nothing, and each claimed row is sent exactly once", async () => {
+  const none = make({ env: { ...tgEnv, ...waEnv }, rpc: claimRows([]), fetch: tgOk });
+  await dispatchNotifications(none.deps, 5); assert.equal(none.fetches.length, 0);
+  const one = make({ env: tgEnv, rpc: claimRows([{ id: "t1", channel: "telegram", booking: B }]), fetch: tgOk });
+  await dispatchNotifications(one.deps, 5);
+  assert.equal(one.fetches.length, 1); assert.equal(one.calls.filter((c) => c.fn === "complete_notification_v1").length, 1);
 });
