@@ -6,6 +6,8 @@
 
 The live Security Advisor reports two RLS-enabled tables without policies (`public.analytics_events`, `private.rate_limits`), one public `get_public_site()` SECURITY DEFINER warning, and six authenticated SECURITY DEFINER warnings. The public RPC returns published site data by design. The admin RPCs contain authorization checks; their warnings still require review and should not be mistaken for a clean Advisor report.
 
+**Critical deployed-code mismatch (verified 2026-11-18):** all five live Edge Functions currently run version 1 and bundle an older `_shared/notify.ts` that does not contain the `WHATSAPP_PAID_MESSAGING_APPROVED === "true"` guard present on the reviewed GitHub branch. Therefore the WhatsApp cost gate is **not active in the deployed functions**. Do not add WhatsApp credentials or submit WhatsApp-channel test bookings. Redeploy the reviewed shared notification code to the development project only after explicit owner approval, then re-fetch each deployed function and verify the guard is present before any WhatsApp credentials are configured.
+
 No real Telegram or WhatsApp delivery has been verified. Do not describe either channel as live until a controlled real-provider test succeeds. WhatsApp paid messaging must remain disabled unless the owner confirms Meta pricing and explicitly approves the cost.
 
 ## Repository
