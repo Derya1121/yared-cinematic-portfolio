@@ -106,22 +106,34 @@ Portrait: no approved photo is in the repository. Three slots (cover, introducti
 
 Not implemented (unchanged): booking stays NOT LIVE and the assistant NOT CONNECTED. No inbox, backend or database was added in this commit.
 
-## Stage 8: private admin foundation (in progress)
+## Stage 8: private admin foundation (development deployment)
 
-Branch: `claude/stage8-cms-admin`. This branch is isolated from `main` and preserves the Stage 7 visual base.
+Branch: `claude/stage8-cms-admin`. This branch remains isolated from `main` and preserves the Stage 7 visual base.
 
 Implemented in the branch:
-- Prepared CMS/admin database migration and scratch-Postgres SQL tests (not applied to Supabase).
-- Edge functions for booking, private feedback, privacy-conscious analytics, notification retries and the WhatsApp delivery webhook.
-- Public-site CMS hooks and booking/feedback forms that remain disabled and labelled NOT LIVE until a dedicated Supabase project is configured.
-- A private `/admin/` owner portal with sign-in, overview, content drafts/publish, project management, media uploads, booking inbox, private feedback inbox, analytics, activity and notification retry controls.
+- CMS/admin schema, booking/feedback/analytics RPCs and scratch-Postgres tests.
+- Public-site CMS hooks and booking/feedback forms, kept disabled until the owner configures the approved public origin and public Supabase key.
+- Private `/admin/` owner portal: sign-in, overview, content drafts/publish, project management, media, booking inbox, feedback inbox, analytics, activity and notification retry controls.
+- Owner-only database authorization migration, now applied to the dedicated development Supabase project.
+- Five active development Edge Functions, deployed at version 2 with the current shared handlers. The WhatsApp paid-send gate is present in every deployed function and remains closed unless the owner explicitly sets the approval secret to the exact value `true`.
 
-Not live or not yet verified:
-- No dedicated portfolio Supabase project exists; no migration or function has been deployed.
-- Admin sign-in and data access cannot work until the owner creates the dedicated project, applies the reviewed migration, creates the owner account and configures the public project URL/anon key.
-- Telegram and WhatsApp credentials/provider setup are not configured. Unit tests use fake services only.
-- The booking form now requires the customer to choose Telegram OR WhatsApp; the Edge Function validates the choice and the database queues only that selected channel. This is code prepared for deployment, not a live notification service.
-- Browser tests and SQL tests were reported by the author; rerun them independently before deployment.
-- The approved owner portrait and verified live project demo URLs are still pending.
+Development backend status (verified 2026-11-18):
+- Dedicated Supabase project `lyeccydsfwjtxhpkhukh` is `ACTIVE_HEALTHY`.
+- Base CMS migration and owner-only security migration are applied.
+- `private.app_config` has RLS enabled; `private.is_admin()` permits active owners only and enforces the configured MFA requirement.
+- All five Edge Functions are active, version 2. No provider credentials were added and no real messages were sent.
+- Public signup is disabled. There are still zero Auth users and zero owner rows; owner invitation and account verification remain to be completed.
+- The website's `config.js` intentionally remains empty, so the public site still labels backend forms NOT LIVE until the owner approves the final host origin and the public URL/anon key are configured.
+- Notification retries need a protected external scheduler; Supabase pg_cron is not installed.
+- Telegram delivery, WhatsApp webhook delivery, real bookings, live admin sign-in and real browser-to-Supabase end-to-end behavior have not yet been verified.
 
-See [Stage 8 setup and safety notes](docs/STAGE8_SETUP.md). Do not deploy, apply migrations, configure production credentials or merge this branch without the owner's separate approval.
+Still pending before delivery:
+- Add the owner's approved portrait at `assets/yared-portrait.jpg`; it is not in the repository.
+- Confirm the final hosting domain and add it to the Edge Function `ALLOWED_ORIGINS` secret.
+- Configure `config.js` with only the Supabase project URL and publishable/anon key.
+- Invite the owner at the approved email, then add that Auth UUID to `public.admin_users` with role `owner` and active status.
+- Configure Telegram server-side secrets and perform a safe, explicitly authorized test. Keep WhatsApp paid messaging disabled unless the owner separately approves Meta pricing and charges.
+- Configure the protected retry scheduler and test one safe retry.
+- Run the GitHub Actions checks and browser tests against the actual hosted preview, then review the remaining Security Advisor warnings.
+
+See [Stage 8 setup and safety notes](docs/STAGE8_SETUP.md). Do not merge this branch to `main` or deploy production without separate owner approval.
