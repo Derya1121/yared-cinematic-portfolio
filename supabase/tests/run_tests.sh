@@ -7,17 +7,17 @@ set -euo pipefail
 cd "$(dirname "$0")"
 case "${PGHOST:-}" in ""|localhost|127.0.0.1|/*) ;; *) echo "refusing to run against remote host $PGHOST"; exit 2;; esac
 DB=derya_stage8_test
-MIG=../migrations/20261117000000_stage8_cms_admin.sql
+MIGS=(../migrations/*.sql)   # every migration, in filename order
 P="psql -X -q -v ON_ERROR_STOP=1"
 
 $P -d postgres -c "drop database if exists $DB" -c "create database $DB"
-trap '$P -d postgres -c "drop database if exists $DB" >/dev/null 2>&1' EXIT
+trap '$P -d postgres -c "drop database if exists $DB" >/dev/null 2>&1; $P -d postgres -c "drop role if exists t_owner" >/dev/null 2>&1' EXIT
 
 echo "== apply test stubs, then the migration"
 $P -d $DB -f 00_test_stubs.sql
-$P -d $DB -f $MIG 2>&1 | grep -v NOTICE || true
+for m in "${MIGS[@]}"; do echo "applying $(basename $m)"; $P -d $DB -f $m 2>&1 | grep -v NOTICE || true; done
 echo "== re-apply the migration to prove it is idempotent"
-$P -d $DB -f $MIG 2>&1 | grep -E "ERROR" && { echo "FAIL: second apply errored"; exit 1; } || true
+for m in "${MIGS[@]}"; do $P -d $DB -f $m 2>&1 | grep -E "ERROR" && { echo "FAIL: second apply of $m errored"; exit 1; } || true; done
 echo "migration applied twice without error"
 
 echo "== assertions"

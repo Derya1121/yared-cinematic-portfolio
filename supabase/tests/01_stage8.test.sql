@@ -251,11 +251,11 @@ select t.eq($q$select d.status from public.notification_deliveries d join public
 commit;
 
 -- =============================================================================
--- F. Editor (non-owner admin)
+-- F. Owner: content, projects and media management
 -- =============================================================================
-begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
-select t.rows('select 1 from public.site_content', 46, 'F1 editor sees all 46 content fields');
-select t.dml($q$update public.site_content set draft = 'I BUILD WHAT MATTERS' where key = 'hero.line1'$q$, 1, 'F2 editor can edit a draft');
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
+select t.rows('select 1 from public.site_content', 46, 'F1 owner sees all 46 content fields');
+select t.dml($q$update public.site_content set draft = 'I BUILD WHAT MATTERS' where key = 'hero.line1'$q$, 1, 'F2 owner can edit a draft');
 select t.errs($q$update public.site_content set draft = 'http://t.me/x' where key = 'contact.telegram'$q$, '23514', 'F3 http:// URL rejected');
 select t.errs($q$update public.site_content set draft = 'https://facebook.com/someone' where key = 'contact.telegram'$q$, '23514', 'F4 Facebook URL rejected');
 select t.errs($q$update public.site_content set draft = 'https://fb.me/someone' where key = 'contact.instagram'$q$, '23514', 'F5 fb.me URL rejected');
@@ -268,25 +268,20 @@ select t.errs($q$update public.site_content set draft = 'purple' where key = 'vi
 select t.errs($q$update public.site_content set draft = repeat('x', 500) where key = 'hero.line1'$q$, '23514', 'F12 max length enforced');
 select t.dml($q$update public.site_content set draft = 'site/portrait.webp' where key = 'media.portrait_hero'$q$, 1, 'F13 valid image path accepted');
 select t.dml($q$update public.site_content set draft = 'aqua' where key = 'visual.accent'$q$, 1, 'F14 valid select option accepted');
-select t.denied($q$update public.site_content set published = 'sneaky' where key = 'hero.line1'$q$, 'F15 editor cannot write the published column directly');
-select t.rows('select 1 from public.bookings', 0, 'F16 editor cannot see bookings');
-select t.rows('select 1 from public.feedback', 0, 'F17 editor cannot see feedback');
-select t.rows('select 1 from public.admin_audit_log', 0, 'F18 editor cannot see the audit log');
-select t.errs('select public.admin_overview()', '42501', 'F19 editor cannot open the owner overview');
-select t.errs($q$insert into public.testimonials (author_name, quote, published) values ('Fake', 'Amazing work!!', true)$q$, '42501', 'F20 editor cannot create/publish testimonials');
-select t.ok($q$insert into public.projects (slug, title, category, status) values ('new-demo', 'New Demo', 'ai', 'draft')$q$, 'F21 editor can create a draft project');
+select t.denied($q$update public.site_content set published = 'sneaky' where key = 'hero.line1'$q$, 'F15 owner cannot write the published column directly');
+select t.ok($q$insert into public.projects (slug, title, category, status) values ('new-demo', 'New Demo', 'ai', 'draft')$q$, 'F21 owner can create a draft project');
 select t.errs($q$update public.projects set demo_url = 'https://www.facebook.com/page' where slug = 'new-demo'$q$, '23514', 'F22 Facebook demo URL rejected');
 select t.errs($q$update public.projects set demo_url = 'http://insecure.example' where slug = 'new-demo'$q$, '23514', 'F23 non-https demo URL rejected');
 select t.dml($q$update public.projects set demo_url = 'https://demo.example.com/app', thumbnail_path = 'projects/new-demo/thumb.webp', technologies = array['Deno','Postgres'] where slug = 'new-demo'$q$, 1, 'F24 valid demo URL, thumbnail and technologies accepted');
 select t.errs($q$update public.projects set slug = 'Bad Slug!' where slug = 'new-demo'$q$, '23514', 'F25 slug format enforced');
 select t.errs($q$update public.projects set accent = 'neon' where slug = 'new-demo'$q$, '23514', 'F26 unknown accent rejected');
 select t.dml($q$delete from public.projects where slug = 'aurex-ai'$q$, 0, 'F27 a published project cannot be deleted (unpublish/archive first)');
-select t.dml($q$update public.projects set status = 'archived' where slug = 'derya-pulse-ai'$q$, 1, 'F28 editor can archive a project');
+select t.dml($q$update public.projects set status = 'archived' where slug = 'derya-pulse-ai'$q$, 1, 'F28 owner can archive a project');
 select t.dml($q$delete from public.projects where slug = 'derya-pulse-ai'$q$, 1, 'F29 an archived project can be deleted');
-select t.ok($q$insert into public.project_media (project_id, path, alt) select id, 'projects/new-demo/shot1.png', 'Home screen' from public.projects where slug = 'new-demo'$q$, 'F30 editor can attach media');
+select t.ok($q$insert into public.project_media (project_id, path, alt) select id, 'projects/new-demo/shot1.png', 'Home screen' from public.projects where slug = 'new-demo'$q$, 'F30 owner can attach media');
 select t.errs($q$insert into public.project_media (project_id, path) select id, '../shot.png' from public.projects where slug = 'new-demo'$q$, '23514', 'F31 media path traversal rejected');
-select t.ok($q$select public.admin_reorder_projects(array(select id from public.projects order by slug desc))$q$, 'F32 editor can reorder projects');
-select t.ok($q$select public.admin_publish_content(array['hero.line1','visual.accent','media.portrait_hero'])$q$, 'F33 editor can publish selected fields');
+select t.ok($q$select public.admin_reorder_projects(array(select id from public.projects order by slug desc))$q$, 'F32 owner can reorder projects');
+select t.ok($q$select public.admin_publish_content(array['hero.line1','visual.accent','media.portrait_hero'])$q$, 'F33 owner can publish selected fields');
 commit;
 
 -- =============================================================================
@@ -299,8 +294,8 @@ select t.eq($q$select jsonb_array_length(public.get_public_site()->'projects')::
 select t.eq($q$select (public.get_public_site()->'projects'->0->>'slug')$q$, 'rent-manager', 'G4 projects come back in the reorder the admin chose');
 select t.eq($q$select (public.get_public_site()::text ~ 'new-demo')::text$q$, 'false', 'G5 draft project "new-demo" is not exposed');
 commit;
-begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
-select t.dml($q$update public.projects set status = 'published' where slug = 'new-demo'$q$, 1, 'G6 editor publishes the draft project');
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
+select t.dml($q$update public.projects set status = 'published' where slug = 'new-demo'$q$, 1, 'G6 owner publishes the draft project');
 commit;
 begin; select t.as_anon();
 select t.eq($q$select ((public.get_public_site()->'projects') @> '[{"slug":"new-demo","demo_url":"https://demo.example.com/app"}]'::jsonb)::text$q$, 'true', 'G7 published project now carries its demo URL');
@@ -327,7 +322,7 @@ select t.denied($q$insert into public.admin_audit_log (action) values ('forged')
 select t.denied($q$insert into public.notification_deliveries (booking_id, channel, status) select id,'telegram','sent' from public.bookings limit 1$q$, 'H14 delivery status cannot be faked from the admin API');
 select t.denied($q$update public.notification_deliveries set status = 'delivered'$q$, 'H15 delivery status cannot be edited from the admin API');
 select t.ok($q$insert into public.booking_notes (booking_id, note) select id, 'Called him, wants a quote.' from public.bookings where service = 'website'$q$, 'H16 owner can add a private note');
-select t.denied($q$insert into public.booking_notes (booking_id, note, author) select id, 'x', 'aaaaaaaa-0000-0000-0000-000000000002' from public.bookings limit 1$q$, 'H17 note author cannot be set by the client');
+select t.denied($q$insert into public.booking_notes (booking_id, note, author) select id, 'x', 'aaaaaaaa-0000-0000-0000-000000000001' from public.bookings limit 1$q$, 'H17 note author cannot be set by the client');
 select t.eq($q$select author::text from public.booking_notes$q$, 'aaaaaaaa-0000-0000-0000-000000000001', 'H18 note author is stamped server-side');
 select t.dml($q$update public.feedback set status = 'read' where category = 'idea' and name = 'Sam'$q$, 1, 'H19 owner can mark feedback read');
 select t.errs($q$update public.feedback set status = 'public' $q$, '23514', 'H20 feedback has no "public" status');
@@ -375,17 +370,17 @@ begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal2');
 select t.rows('select 1 from public.bookings', 3, 'I3 with MFA required, an aal2 session works');
 commit;
 update private.app_config set value = 'false' where key = 'admin_require_mfa';
-update public.admin_users set active = false where user_id = 'aaaaaaaa-0000-0000-0000-000000000002';
-begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
+update public.admin_users set active = false where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 select t.rows('select 1 from public.site_content', 0, 'I4 a deactivated admin loses access immediately');
 select t.errs($q$select public.admin_publish_content()$q$, '42501', 'I5 a deactivated admin cannot publish');
 commit;
-update public.admin_users set active = true where user_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+update public.admin_users set active = true where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';
 
 -- =============================================================================
 -- J. Storage policies
 -- =============================================================================
-begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 select t.ok($q$insert into storage.objects (bucket_id, name) values ('portfolio-media', 'projects/new-demo/hero.webp')$q$, 'J1 editor can upload a valid image path');
 select t.errs($q$insert into storage.objects (bucket_id, name) values ('portfolio-media', 'projects/../secrets.png')$q$, '42501', 'J2 path traversal upload rejected');
 select t.errs($q$insert into storage.objects (bucket_id, name) values ('portfolio-media', 'other/x.png')$q$, '42501', 'J3 uploads outside projects/ and site/ rejected');
@@ -411,5 +406,104 @@ begin; select t.as_service();
 select t.eq($q$select (public.purge_old_rows_v1()->>'analytics_events')$q$, '1', 'K6 purge removes analytics older than 400 days');
 commit;
 select t.eq($q$select count(*)::text from information_schema.columns where table_name = 'analytics_events' and column_name ~* '(ip|agent|email|name)'$q$, '0', 'K7 analytics_events has no IP / user-agent / email / name column');
+
+-- =============================================================================
+-- L. An ACTIVE account whose role is "editor" is denied everything (owner-only enforcement)
+-- =============================================================================
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
+select t.rows('select 1 from public.admin_users', 0, 'L1 editor reads no admin_users rows');
+select t.rows('select 1 from public.content_fields', 0, 'L2 editor reads no content_fields');
+select t.rows('select 1 from public.site_content', 0, 'L3 editor reads no site_content (drafts are private)');
+select t.rows('select 1 from public.projects', 0, 'L4 editor reads no projects (incl. drafts/archived)');
+select t.rows('select 1 from public.project_media', 0, 'L5 editor reads no project_media');
+select t.rows('select 1 from public.testimonials', 0, 'L6 editor reads no testimonials');
+select t.rows('select 1 from public.bookings', 0, 'L7 editor reads no bookings');
+select t.rows('select 1 from public.booking_notes', 0, 'L8 editor reads no booking notes');
+select t.rows('select 1 from public.feedback', 0, 'L9 editor reads no feedback');
+select t.rows('select 1 from public.feedback_replies', 0, 'L10 editor reads no feedback replies');
+select t.rows('select 1 from public.notification_deliveries', 0, 'L11 editor reads no delivery records');
+select t.rows('select 1 from public.admin_audit_log', 0, 'L12 editor reads no audit log');
+select t.denied('select 1 from public.analytics_events', 'L13 editor reads no raw analytics');
+select t.dml($q$update public.site_content set draft = 'editor edit'$q$, 0, 'L14 editor cannot edit any draft');
+select t.dml($q$update public.projects set title = 'x'$q$, 0, 'L15 editor cannot edit projects');
+select t.dml($q$update public.projects set status = 'archived'$q$, 0, 'L16 editor cannot unpublish/archive projects');
+select t.dml($q$delete from public.projects$q$, 0, 'L17 editor cannot delete projects');
+select t.dml($q$update public.bookings set status = 'read'$q$, 0, 'L18 editor cannot change booking status');
+select t.dml($q$update public.feedback set status = 'read'$q$, 0, 'L19 editor cannot change feedback status');
+select t.dml($q$update public.testimonials set published = true$q$, 0, 'L20 editor cannot publish testimonials');
+select t.errs($q$insert into public.projects (slug, title) values ('editor-proj', 'x')$q$, '42501', 'L21 editor cannot create projects');
+select t.errs($q$insert into public.project_media (project_id, path) values (gen_random_uuid(), 'projects/x/a.png')$q$, '42501', 'L22 editor cannot attach media');
+select t.errs($q$insert into public.testimonials (author_name, quote, published) values ('Fake','Amazing work!!',true)$q$, '42501', 'L23 editor cannot create testimonials');
+select t.errs($q$insert into public.booking_notes (booking_id, note) values (gen_random_uuid(), 'x')$q$, '42501', 'L24 editor cannot write booking notes');
+select t.errs($q$insert into public.feedback_replies (feedback_id, body) values (gen_random_uuid(), 'x')$q$, '42501', 'L25 editor cannot reply to feedback');
+select t.errs('select public.admin_publish_content()', '42501', 'L26 editor cannot publish site content');
+select t.errs($q$select public.admin_reorder_projects(array[]::uuid[])$q$, '42501', 'L27 editor cannot reorder projects');
+select t.errs($q$select public.admin_retry_notification(gen_random_uuid())$q$, '42501', 'L28 editor cannot retry notifications');
+select t.errs('select public.admin_overview()', '42501', 'L29 editor cannot open the overview');
+select t.errs('select public.admin_analytics_summary(current_date - 1, current_date)', '42501', 'L30 editor cannot read the analytics summary');
+select t.errs($q$insert into storage.objects (bucket_id, name) values ('portfolio-media', 'projects/ed/x.webp')$q$, '42501', 'L31 editor cannot upload to storage');
+select t.rows($q$select 1 from storage.objects where bucket_id = 'portfolio-media'$q$, 0, 'L32 editor cannot list storage objects');
+select t.dml($q$update storage.objects set name = 'projects/renamed.webp' where bucket_id = 'portfolio-media'$q$, 0, 'L33 editor cannot rename/replace storage objects');
+select t.dml($q$delete from storage.objects where bucket_id = 'portfolio-media'$q$, 0, 'L34 editor cannot delete storage objects');
+select t.denied($q$select * from private.app_config$q$, 'L35 editor cannot read private.app_config');
+select t.denied($q$update private.app_config set value = 'false'$q$, 'L36 editor cannot switch the MFA requirement off');
+select t.ok('select public.get_public_site()', 'L37 editor still gets the public site view like any visitor');
+commit;
+select t.eq($q$select private.is_admin('editor')::text$q$, 'false', 'L38 (superuser view) is_admin(''editor'') is false for no-JWT callers');
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002');
+select t.eq($q$select private.is_admin('editor')::text$q$, 'false', 'L39 is_admin(''editor'') is false for an editor-role account');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'false', 'L40 is_admin(''owner'') is false for an editor-role account');
+commit;
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001');
+select t.eq($q$select private.is_admin('editor')::text$q$, 'true', 'L41 the owner passes the helper (argument kept for compatibility)');
+select t.rows('select 1 from public.site_content', 46, 'L42 owner retains read of all content fields');
+select t.rows('select 1 from public.bookings', 3, 'L43 owner retains read of bookings');
+select t.ok($q$select public.admin_overview()$q$, 'L44 owner retains the overview RPC');
+select t.ok($q$insert into storage.objects (bucket_id, name) values ('portfolio-media', 'site/owner-check.webp')$q$, 'L45 owner retains storage upload');
+select t.dml($q$delete from storage.objects where name = 'site/owner-check.webp'$q$, 1, 'L46 owner retains storage delete');
+commit;
+
+-- =============================================================================
+-- M. RLS on private.app_config must not break the MFA check inside private.is_admin
+-- =============================================================================
+-- On Supabase the migration role (postgres) owns the table and the SECURITY DEFINER function and
+-- bypasses RLS. A local superuser would bypass RLS too and prove nothing, so this section hands
+-- ownership to an ordinary role that has NO bypassrls and is NOT a superuser, then re-tests.
+select t.eq($q$select relrowsecurity::text from pg_class where oid = 'private.app_config'::regclass$q$, 'true', 'M1 RLS is enabled on private.app_config');
+select t.rows($q$select 1 from pg_policy where polrelid = 'private.app_config'::regclass$q$, 0, 'M2 app_config has no policies (deny-by-default for everyone but the owner)');
+do $$ begin if not exists (select 1 from pg_roles where rolname = 't_owner') then create role t_owner nologin; end if; end $$;
+select t.rows($q$select 1 from pg_roles where rolname = 't_owner' and (rolsuper or rolbypassrls)$q$, 0, 'M3 the stand-in owner is neither superuser nor bypassrls');
+alter table private.app_config owner to t_owner;
+alter table public.admin_users owner to t_owner;
+alter function private.is_admin(text) owner to t_owner;
+grant usage on schema public, private, auth to t_owner;
+grant execute on function auth.uid(), auth.jwt() to t_owner;
+update private.app_config set value = 'false' where key = 'admin_require_mfa';
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal1');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'true', 'M4 MFA not required: owner passes with an aal1 session (config row is readable by the definer)');
+commit;
+update private.app_config set value = 'true' where key = 'admin_require_mfa';
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal1');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'false', 'M5 MFA required: aal1 session is refused (the config row IS being read, not silently ignored)');
+commit;
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal2');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'true', 'M6 MFA required: aal2 session passes');
+commit;
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000002', 'aal2');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'false', 'M7 MFA satisfied but role is editor: still refused');
+commit;
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal1');
+select t.denied($q$select * from private.app_config$q$, 'M8 even the owner cannot read or change private.app_config through the API');
+select t.denied($q$update private.app_config set value = 'false'$q$, 'M9 the owner cannot switch MFA off through the API either');
+commit;
+-- fail-open check, documented rather than hidden: a deleted config row means "MFA not required"
+delete from private.app_config where key = 'admin_require_mfa';
+begin; select t.as_user('aaaaaaaa-0000-0000-0000-000000000001', 'aal1');
+select t.eq($q$select private.is_admin('owner')::text$q$, 'true', 'M10 NOTE: with the config row deleted MFA defaults to NOT required (default is documented; only the DB owner can delete it)');
+commit;
+insert into private.app_config (key, value) values ('admin_require_mfa', 'false') on conflict (key) do update set value = 'false';
+alter table private.app_config owner to postgres;
+alter table public.admin_users owner to postgres;
+alter function private.is_admin(text) owner to postgres;
 
 \echo ALL SQL ASSERTIONS PASSED
