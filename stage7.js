@@ -35,7 +35,7 @@
       word.appendChild(l);
     });
 
-    var total = lite ? 3600 : 5600, ended = false, started = 0, raf = 0, timers = [];
+    var total = lite ? 6000 : 9000, ended = false, started = 0, raf = 0, timers = [];
     var canvas = $('.s7-warp', el), ctx = canvas && canvas.getContext && canvas.getContext('2d');
     var W = 0, H = 0, stars = [], speed = .0035, boost = 1;
     var cols = ['138,125,255', '70,227,209', '255,138,92', '230,232,255'];
@@ -57,7 +57,7 @@
       if (ended) return;
       var t = now - started;
       // light trails accelerate as the camera pushes through the lettering
-      var target = t < total * .62 ? 1 : 1 + (t - total * .62) / (total * .38) * 14;
+      var target = t < total * .72 ? 1 : 1 + (t - total * .72) / (total * .28) * 14;
       boost += (target - boost) * .08;
       ctx.fillStyle = 'rgba(2,3,10,' + (boost > 3 ? .35 : .22) + ')';
       ctx.fillRect(0, 0, W, H);
@@ -91,7 +91,7 @@
     function end(fast) {
       if (ended) return; ended = true;
       el.classList.add(fast ? 'is-fast' : 'is-leave');
-      timers.push(setTimeout(finish, fast ? 460 : 720));
+      timers.push(setTimeout(finish, fast ? 460 : 900));
     }
     function onKey(e) {
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); end(true); }
