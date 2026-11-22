@@ -21,66 +21,11 @@
     var lite = isLite();
     if (lite) el.classList.add('is-lite');
 
-    // dimensional letters: stacked copies pushed back along Z
-    var word = $('#s7-word'), layers = lite ? 5 : 9, letters = 'DERYA'.split('');
-    letters.forEach(function (ch, n) {
-      var l = document.createElement('span');
-      l.className = 's7-l'; l.style.setProperty('--n', n);
-      for (var k = 0; k < layers; k++) {
-        var s = document.createElement('span');
-        s.className = 's7-s' + (k === layers - 1 ? ' is-glow' : '');
-        s.style.setProperty('--k', k); s.textContent = ch;
-        l.appendChild(s);
-      }
-      word.appendChild(l);
-    });
-
-    var total = lite ? 6000 : 9000, ended = false, started = 0, raf = 0, timers = [];
-    var canvas = $('.s7-warp', el), ctx = canvas && canvas.getContext && canvas.getContext('2d');
-    var W = 0, H = 0, stars = [], speed = .0035, boost = 1;
-    var cols = ['138,125,255', '70,227,209', '255,138,92', '230,232,255'];
-
-    function size() {
-      var dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 1.5);
-      W = innerWidth; H = innerHeight;
-      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    function spawn(i) { return { a: Math.random() * 6.2832, z: Math.random() * .95 + .05, c: cols[i % cols.length], pz: 0 }; }
-    if (ctx) {
-      size();
-      var count = lite ? 60 : 150;
-      for (var i = 0; i < count; i++) stars.push(spawn(i));
-      window.addEventListener('resize', size);
-    }
-    function draw(now) {
-      if (ended) return;
-      var t = now - started;
-      // light trails accelerate as the camera pushes through the lettering
-      var target = t < total * .72 ? 1 : 1 + (t - total * .72) / (total * .28) * 14;
-      boost += (target - boost) * .08;
-      ctx.fillStyle = 'rgba(2,3,10,' + (boost > 3 ? .35 : .22) + ')';
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-      var cx = W / 2, cy = H * .52, R = Math.max(W, H) * .75;
-      for (var i = 0; i < stars.length; i++) {
-        var s = stars[i];
-        s.pz = s.z; s.z -= speed * boost;
-        if (s.z <= .02) { stars[i] = spawn(i); stars[i].z = 1; continue; }
-        var x0 = cx + Math.cos(s.a) * R * (.04 / s.pz), y0 = cy + Math.sin(s.a) * R * (.04 / s.pz);
-        var x1 = cx + Math.cos(s.a) * R * (.04 / s.z), y1 = cy + Math.sin(s.a) * R * (.04 / s.z);
-        var al = clamp(1 - s.z, 0, 1) * .85;
-        ctx.strokeStyle = 'rgba(' + s.c + ',' + al.toFixed(3) + ')';
-        ctx.lineWidth = .6 + (1 - s.z) * 2.2;
-        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-      }
-      ctx.globalCompositeOperation = 'source-over';
-      raf = requestAnimationFrame(draw);
-    }
+    // one calm, unhurried sequence. Tap/click, Escape, Enter or Space still end it early (no visible button).
+    var total = lite ? 5200 : 7000, ended = false, timers = [];
 
     function finish() {
-      timers.forEach(clearTimeout); cancelAnimationFrame(raf);
-      window.removeEventListener('resize', size);
+      timers.forEach(clearTimeout);
       document.removeEventListener('keydown', onKey, true);
       try { sessionStorage.setItem('derya-s7-intro', '1'); } catch (e) { /* storage unavailable */ }
       root.classList.remove('s7-intro');
@@ -91,24 +36,29 @@
     function end(fast) {
       if (ended) return; ended = true;
       el.classList.add(fast ? 'is-fast' : 'is-leave');
-      timers.push(setTimeout(finish, fast ? 460 : 900));
+      timers.push(setTimeout(finish, fast ? 420 : 1000));
     }
     function onKey(e) {
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); end(true); }
     }
 
-    $('#s7-skip', el).addEventListener('click', function () { end(true); });
     el.addEventListener('click', function () { end(true); });
     document.addEventListener('keydown', onKey, true);
-
-    requestAnimationFrame(function () {
-      started = performance.now();
-      el.classList.add('is-run');
-      try { $('#s7-skip', el).focus({ preventScroll: true }); } catch (e) { /* ignore */ }
-      if (ctx) raf = requestAnimationFrame(draw);
-      timers.push(setTimeout(function () { end(false); }, total));
-    });
     document.addEventListener('visibilitychange', function () { if (document.hidden && !ended) end(true); });
+
+    // wait for the display face (max 1.2s) so the name never swaps fonts mid-stroke
+    var go = function () {
+      if (ended || el.classList.contains('is-run')) return;
+      el.classList.add('is-run');
+      timers.push(setTimeout(function () { end(false); }, total));
+    };
+    requestAnimationFrame(function () {
+      var gate = document.fonts && document.fonts.load ? Promise.race([
+        document.fonts.load('800 96px Manrope', 'DERYA'),
+        new Promise(function (r) { setTimeout(r, 1200); })
+      ]) : Promise.resolve();
+      gate.then(go, go);
+    });
   }
 
   /* ====================================================================
