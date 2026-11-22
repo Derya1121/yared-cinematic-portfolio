@@ -21,11 +21,12 @@ main > .section:not(.hero) { padding-block: clamp(76px, 13vh, 150px); }
 /* a soft pool of light where one chapter hands over to the next */
 main > .section:not(.hero)::after {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: clamp(120px, 22vh, 240px);
-  pointer-events: none; z-index: 0;
+  pointer-events: none; z-index: -1;
   background: radial-gradient(60% 100% at 50% 0%, rgba(201, 168, 106, .07), rgba(138, 125, 255, .04) 45%, transparent 75%);
 }
-main > .section > * { position: relative; z-index: 1; }
-main > .section.s6-seen > .s7-figure, main > .section > .s7-reel { z-index: 1; }
+/* keep the glow behind each chapter's content without re-positioning any child
+   (a blanket `> * { position: relative }` here once broke the cover's absolutely-placed layers) */
+main > .section:not(.hero) { isolation: isolate; }
 
 /* headings glide into place as the chapter scrolls in (progressive: browsers without scroll timelines show them as-is) */
 @supports (animation-timeline: view()) {
