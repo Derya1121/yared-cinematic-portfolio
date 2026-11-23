@@ -34,7 +34,7 @@ async function deleteProject(id){if(!confirm('Delete this unpublished project?')
 async function loadSlots(){
  const rows=await rpc('admin_list_booking_slots');
  $('#slot-list').innerHTML=rows.map(s=>'<article class="item"><div class="rowline"><b>'+esc(dateStr(s.starts_at))+' – '+esc(new Date(s.ends_at).toLocaleTimeString())+'</b><span class="pill">'+(s.active?'OPEN':'CLOSED')+'</span></div><p>'+esc(s.service||'All services')+' · '+s.booked_count+' / '+s.capacity+' booked</p><button class="ghost" data-slot-toggle="'+s.id+'" data-active="'+s.active+'">'+(s.active?'Close slot':'Reopen slot')+'</button></article>').join('')||'<p class="muted">No appointment slots configured. Add slots above to make booking times available.</p>';
- $('[data-slot-toggle]').forEach(b=>b.addEventListener('click',async()=>{try{await rpc('admin_set_booking_slot_active',{p_id:b.dataset.slotToggle,p_active:b.dataset.active!=='true'});await loadSlots();global('Availability updated.','ok')}catch(e){global(e.message,'error')}}));
+ $$('[data-slot-toggle]').forEach(b=>b.addEventListener('click',async()=>{try{await rpc('admin_set_booking_slot_active',{p_id:b.dataset.slotToggle,p_active:b.dataset.active!=='true'});await loadSlots();global('Availability updated.','ok')}catch(e){global(e.message,'error')}}));
 }
 $('#slot-form').addEventListener('submit',async e=>{
  e.preventDefault();const f=new FormData(e.currentTarget),start=new Date(f.get('starts_at')),end=new Date(f.get('ends_at')),capacity=Number(f.get('capacity'));
