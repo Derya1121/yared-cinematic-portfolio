@@ -198,11 +198,27 @@
   var bf = q('#s8-booking'), ff = q('#s8-feedback');
   if (bf) setupForm(bf, 'submit-booking', 'booking');
   if (ff) setupForm(ff, 'submit-feedback', 'feedback');
+  function syncTestimonials(list) {
+    var section = q('#s8-reviews'), root = q('#s8-reviews-list');
+    if (!section || !root) return;
+    root.replaceChildren();
+    if (!Array.isArray(list) || !list.length) { section.hidden = true; return; }
+    list.forEach(function (item) {
+      var card = doc.createElement('article'); card.className = 's8-review-card';
+      var stars = doc.createElement('p'); stars.className = 's8-review-stars'; stars.textContent = '★'.repeat(Math.max(0, Math.min(5, Number(item.rating) || 0)));
+      var quote = doc.createElement('blockquote'); quote.textContent = item.quote || '';
+      var author = doc.createElement('p'); author.className = 's8-review-author'; author.textContent = item.author_name || 'Client';
+      var role = doc.createElement('small'); role.textContent = item.author_role || '';
+      card.appendChild(stars); card.appendChild(quote); card.appendChild(author); card.appendChild(role); root.appendChild(card);
+    });
+    section.hidden = false;
+  }
   fetch(BASE + '/rest/v1/rpc/get_public_site', { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: '{}' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (site) {
       if (!site || typeof site !== 'object') return;
       if (site.content && typeof site.content === 'object') applyContent(site.content);
       syncProjects(site.projects);
+      syncTestimonials(site.testimonials);
     }).catch(function () { /* the static Stage 7 page stays exactly as it is */ });
 })();
