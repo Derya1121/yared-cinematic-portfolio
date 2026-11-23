@@ -365,7 +365,8 @@
   }
 
   /* ---- start everything, each part isolated so one failure cannot stop the rest ---- */
-  [startField, startTrail, startParallax, startTilt, startEntrances].forEach(function (fn) {
+  // startField (the full-page gold particle canvas with falling comets) is intentionally not started: owner request, Stage 8 finalisation.
+  [startTrail, startParallax, startTilt, startEntrances].forEach(function (fn) {
     try { fn(); } catch (err) { if (window.console) console.warn('[stage6] ' + fn.name + ' skipped:', err); }
   });
 })();
