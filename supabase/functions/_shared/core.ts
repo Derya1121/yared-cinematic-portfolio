@@ -74,15 +74,21 @@ export async function hmacHex(secret: string, message: string): Promise<string> 
 }
 export function utcDay(ms: number): string { return new Date(ms).toISOString().slice(0, 10); }
 
+/** Require a strong server-side salt. Never fall back to a predictable development value. */
+function requireIpHashSalt(deps: Deps): string {
+  const salt = deps.env("IP_HASH_SALT") ?? "";
+  if (salt.length < 32) throw new Error("IP_HASH_SALT must contain at least 32 characters");
+  return salt;
+}
 /** Salted, day-scoped hash. The raw IP is never stored or logged; the hash rotates every UTC day. */
 export async function ipHash(req: Request, deps: Deps): Promise<string> {
-  const salt = deps.env("IP_HASH_SALT") ?? "";
-  return (await hmacHex(salt || "unsalted-dev-only", `${clientIp(req)}|${utcDay(deps.now())}`)).slice(0, 32);
+  const salt = requireIpHashSalt(deps);
+  return (await hmacHex(salt, `${clientIp(req)}|${utcDay(deps.now())}`)).slice(0, 32);
 }
 export async function visitorHash(req: Request, deps: Deps): Promise<string> {
-  const salt = deps.env("IP_HASH_SALT") ?? "";
+  const salt = requireIpHashSalt(deps);
   const ua = req.headers.get("user-agent") ?? "";
-  return (await hmacHex(salt || "unsalted-dev-only", `v|${clientIp(req)}|${ua}|${utcDay(deps.now())}`)).slice(0, 32);
+  return (await hmacHex(salt, `v|${clientIp(req)}|${ua}|${utcDay(deps.now())}`)).slice(0, 32);
 }
 
 export function str(v: unknown, max: number): string {
