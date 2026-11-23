@@ -4,6 +4,6 @@
    Only the project URL and the *publishable (anon)* key belong here. NEVER put a service-role key,
    bot token or any other secret in this file. */
 window.DERYA_CONFIG = {
-  supabaseUrl: "",       // e.g. "https://abcdxyz.supabase.co"
-  supabaseAnonKey: ""    // the publishable anon key
+  supabaseUrl: "https://lyeccydsfwjtxhpkhukh.supabase.co",       // e.g. "https://abcdxyz.supabase.co"
+  supabaseAnonKey: "sb_publishable_cKQOyr-cWX5IrOnkHvYI_Q_FJsrZnr5"    // the publishable anon key
 };
