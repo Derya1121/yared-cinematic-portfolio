@@ -14,7 +14,7 @@ type Call = { fn: string; args: Record<string, unknown> };
 
 function make(over: { env?: Record<string, string>; rpc?: (fn: string, a: any) => any; fetch?: any } = {}) {
   const calls: Call[] = []; const bg: Promise<unknown>[] = []; const fetches: { url: string; init: any }[] = [];
-  const env: Record<string, string> = { ALLOWED_ORIGINS: ORIGIN, IP_HASH_SALT: "salt-salt-salt-salt", ...over.env };
+  const env: Record<string, string> = { ALLOWED_ORIGINS: ORIGIN, IP_HASH_SALT: "test-only-ip-hash-salt-at-least-32-characters-long", ...over.env };
   const deps: Deps = {
     env: (k) => env[k], now: () => NOW,
     rpc: async (fn, args) => { calls.push({ fn, args }); return over.rpc ? over.rpc(fn, args) : { data: fn === "check_rate_limit_v1" ? true : { ok: true, duplicate: false, reference: "DB-ABCDEF12" }, error: null }; },
@@ -37,6 +37,12 @@ test("CORS: unlisted origin is refused; listed origin is echoed; no wildcard", a
   assert.equal(ok.headers.get("access-control-allow-origin"), ORIGIN);
   const none = make({ env: { ALLOWED_ORIGINS: "" } });
   assert.equal((await submitBooking(none.deps)(post(booking()))).status, 403);
+});
+
+test("health probe refuses to go live without a strong IP hash salt", async () => {
+  const m = make({ env: { IP_HASH_SALT: "" } });
+  const r = await submitBooking(m.deps)(new Request("https://f.example/fn?health=1", { method: "GET", headers: { origin: ORIGIN } }));
+  assert.equal(r.status, 503);
 });
 
 test("health probe: side-effect free, only for allowed origins", async () => {
