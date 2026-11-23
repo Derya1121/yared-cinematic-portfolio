@@ -10,7 +10,7 @@ create table if not exists public.booking_slots (
 );
 create index if not exists booking_slots_start_idx on public.booking_slots (starts_at) where active;
 alter table public.booking_slots enable row level security;
-grant select, insert, update, delete on public.booking_slots to authenticated;
+revoke all on public.booking_slots from anon, authenticated, public, service_role;
 drop policy if exists booking_slots_owner_all on public.booking_slots;
 create policy booking_slots_owner_all on public.booking_slots for all to authenticated
   using (private.is_admin('owner')) with check (private.is_admin('owner'));
