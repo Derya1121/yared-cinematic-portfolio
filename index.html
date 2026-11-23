@@ -179,7 +179,7 @@
               <option value="">Choose one</option><option value="website">Website / digital product</option>
               <option value="ai-assistant">AI software / assistant</option><option value="automation">Business automation</option>
               <option value="software">Software / integration</option><option value="other">Something else</option></select></label>
-            <label>Preferred date<input name="slot_date" type="date" min="${new Date().toISOString().slice(0,10)}" required></label>
+            <label>Preferred date<input name="slot_date" type="date" required></label>
             <label>Available time<select name="slot_id" required><option value="">Choose a date and service first</option></select></label>
             <label>Budget <small>(optional)</small><select name="budget"><option value="">Prefer not to say</option>
               <option value="under-500">Under $500</option><option value="500-1500">$500–1,500</option>
@@ -208,6 +208,11 @@
           <p class="s8-status" role="status" aria-live="polite" data-s8-status></p>
         </form>
       </div>
+    </section>
+
+    <section class="s8-reviews section" id="s8-reviews" aria-labelledby="s8-reviews-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">CLIENT EXPERIENCE</p><h2 id="s8-reviews-title">Words that <em>matter.</em></h2></div></div>
+      <div id="s8-reviews-list" class="s8-reviews-list"></div>
     </section>
 
     <!-- Scene 7: closing -->
