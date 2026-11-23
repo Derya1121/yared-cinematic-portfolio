@@ -25,6 +25,9 @@ async function newPage(browser, o) {
   page.on('pageerror', e => log.errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|fonts|ERR_/.test(m.text())) log.errors.push(m.text()); });
   page.on('request', r => { const u = r.url(); if (!/^http:\/\/localhost|^data:|fonts\.(googleapis|gstatic)/.test(u)) log.external.push(r.method() + ' ' + u); });
+  if (!o.configured) {
+    await page.route('**/config.js', r => r.fulfill({ contentType: 'text/javascript', body: 'window.DERYA_CONFIG={};' }));
+  }
   if (o.configured) {
     await page.route('**/config.js', r => r.fulfill({ contentType: 'text/javascript', body: `window.DERYA_CONFIG={supabaseUrl:'${BASE}',supabaseAnonKey:'sb_publishable_${'x'.repeat(30)}'}` }));
     const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' };
