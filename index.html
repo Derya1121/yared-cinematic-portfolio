@@ -179,6 +179,8 @@
               <option value="">Choose one</option><option value="website">Website / digital product</option>
               <option value="ai-assistant">AI software / assistant</option><option value="automation">Business automation</option>
               <option value="software">Software / integration</option><option value="other">Something else</option></select></label>
+            <label>Preferred date<input name="slot_date" type="date" min="${new Date().toISOString().slice(0,10)}" required></label>
+            <label>Available time<select name="slot_id" required><option value="">Choose a date and service first</option></select></label>
             <label>Budget <small>(optional)</small><select name="budget"><option value="">Prefer not to say</option>
               <option value="under-500">Under $500</option><option value="500-1500">$500–1,500</option>
               <option value="1500-5000">$1,500–5,000</option><option value="5000-plus">$5,000+</option><option value="unsure">Not sure yet</option></select></label>
@@ -191,13 +193,14 @@
         </form>
         <form class="s8-card" id="s8-feedback" novalidate aria-labelledby="s8-feedback-h">
           <p class="capability-status s8-state" data-s8-state><span aria-hidden="true"></span> NOT LIVE</p>
-          <h3 id="s8-feedback-h">Private feedback</h3>
-          <p class="s8-note" data-s8-note>Feedback is not connected yet. It will be private and is never shown on this site.</p>
+          <h3 id="s8-feedback-h">Share a review</h3>
+          <p class="s8-note" data-s8-note>Reviews are private until the owner approves them for publication.</p>
           <fieldset class="s8-fields" data-s8-fields disabled>
             <label>Name <small>(optional)</small><input name="name" autocomplete="name" maxlength="80"></label>
             <label>Email <small>(optional, only if you want a reply)</small><input name="email" type="email" autocomplete="email" maxlength="254" inputmode="email"></label>
             <label>Topic<select name="category" required><option value="general">General</option><option value="design">Design</option>
               <option value="bug">Something is broken</option><option value="idea">An idea</option><option value="praise">Kind words</option><option value="other">Other</option></select></label>
+            <label>Rating<select name="rating" required><option value="5">★★★★★ — Excellent</option><option value="4">★★★★☆ — Very good</option><option value="3">★★★☆☆ — Good</option><option value="2">★★☆☆☆ — Fair</option><option value="1">★☆☆☆☆ — Poor</option></select></label>
             <label class="s8-wide">Your message<textarea name="message" rows="5" maxlength="2000" required></textarea></label>
             <div class="s8-hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
             <button class="button button-outline s8-submit" type="submit">Send feedback</button>
