@@ -1,7 +1,7 @@
 name: Stage 8 static checks
 on:
   push:
-    branches: [claude/stage8-cms-admin]
+    branches: [claude/stage8-cms-admin, 'feat/**']
   pull_request:
     branches: [claude/stage8-cms-admin]
 jobs:
