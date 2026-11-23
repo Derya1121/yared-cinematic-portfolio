@@ -43,7 +43,7 @@ export function submitBooking(deps: Deps): Handler {
     const r = await deps.rpc("create_booking_v1", {
       p: {
         name: str(b.name, 200), business: str(b.business, 200), email: str(b.email, 300), whatsapp: str(b.whatsapp, 40), delivery_channel: deliveryChannel,
-        service: str(b.service, 40), budget: str(b.budget, 40), description: str(b.description, 4000),
+        service: str(b.service, 40), budget: str(b.budget, 40), description: str(b.description, 4000), slot_id: str(b.slot_id, 64),
       },
       p_ip_hash: ip, p_client_key: str(b.client_key, 64) || null,
     });
@@ -65,7 +65,7 @@ export function submitFeedback(deps: Deps): Handler {
     const ip = await ipHash(req, deps);
     if (await rateLimited(deps, `feedback:${ip}`, 5, 3600)) return json({ ok: false, error: "rate_limited" }, 429, cors);
     const r = await deps.rpc("create_feedback_v1", {
-      p: { name: str(b.name, 200), email: str(b.email, 300), category: str(b.category, 40), message: str(b.message, 4000) },
+      p: { name: str(b.name, 200), email: str(b.email, 300), category: str(b.category, 40), message: str(b.message, 4000), rating: Number(b.rating) },
       p_ip_hash: ip, p_client_key: str(b.client_key, 64) || null,
     });
     if (r.error) return json({ ok: false, error: "unavailable" }, 503, cors);
