@@ -18,7 +18,7 @@ begin
  if v_service not in ('website','ai-assistant','automation','software','other') then return jsonb_build_object('ok',false,'field','service','error','invalid'); end if;
  if v_budget is not null and v_budget not in ('under-500','500-1500','1500-5000','5000-plus','unsure') then return jsonb_build_object('ok',false,'field','budget','error','invalid'); end if;
  if length(v_desc) not between 10 and 2000 then return jsonb_build_object('ok',false,'field','description','error','invalid'); end if;
- if (v_name||v_desc) ~ '[\x01-\x08\x0b\x0c\x0e-\x1f]' then return jsonb_build_object('ok',false,'field','description','error','invalid'); end if;
+ if exists(select 1 from generate_series(1,31) n where n not in (9,10,13) and strpos(v_name||coalesce(v_business,'')||v_desc,chr(n))>0) then return jsonb_build_object('ok',false,'field','description','error','invalid'); end if;
  if p_client_key is not null and p_client_key !~ '^[A-Za-z0-9_-]{8,64}$' then return jsonb_build_object('ok',false,'field','client_key','error','invalid'); end if;
  v_hash:=encode(sha256(convert_to(coalesce(v_email,'')||'|'||coalesce(v_wa,'')||'|'||v_service||'|'||regexp_replace(lower(v_desc),'\s+',' ','g'),'UTF8')),'hex');
  perform pg_advisory_xact_lock(hashtextextended(v_hash,0));
