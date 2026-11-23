@@ -74,6 +74,18 @@
 
       <section class="view" id="view-bookings" hidden>
         <div class="section-head"><div><p class="eyebrow">PRIVATE CUSTOMER REQUESTS</p><h1>Booking inbox</h1></div><button class="ghost" data-refresh="bookings">Refresh</button></div>
+        <article class="panel" id="availability-panel">
+          <h2>Appointment availability</h2>
+          <p class="muted">Create real appointment slots. Only active, unfilled slots appear on the public booking form.</p>
+          <form id="slot-form" class="form-grid">
+            <label>Service<select name="service"><option value="">All services</option><option value="website">Website / digital product</option><option value="ai-assistant">AI software / assistant</option><option value="automation">Business automation</option><option value="software">Software / integration</option><option value="other">Other</option></select></label>
+            <label>Starts<input name="starts_at" type="datetime-local" required></label>
+            <label>Ends<input name="ends_at" type="datetime-local" required></label>
+            <label>Capacity<input name="capacity" type="number" min="1" max="20" value="1" required></label>
+            <div class="actions wide"><button class="primary" type="submit">Add available slot</button></div>
+          </form>
+          <div id="slot-list" class="inbox">Loading availability…</div>
+        </article>
         <div id="booking-list" class="inbox">Loading…</div>
       </section>
 
