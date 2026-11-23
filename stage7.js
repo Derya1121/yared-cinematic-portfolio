@@ -54,7 +54,7 @@
     };
     requestAnimationFrame(function () {
       var gate = document.fonts && document.fonts.load ? Promise.race([
-        document.fonts.load('800 96px Manrope', 'DERYA'),
+        document.fonts.load('96px "Pinyon Script"', 'DERYA'),
         new Promise(function (r) { setTimeout(r, 1200); })
       ]) : Promise.resolve();
       gate.then(go, go);

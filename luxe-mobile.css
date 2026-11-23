@@ -193,3 +193,7 @@ html.lite .project-art { filter: none; }
   .expertise-grid article:hover { background: linear-gradient(135deg, rgba(201, 168, 106, .1), transparent); }
   .service-list > div:hover { background: linear-gradient(90deg, rgba(201, 168, 106, .08), transparent); }
 }
+
+/* Calm cover (owner request): no floating 3D objects over the cover and no floating scene-dot rail at the right edge.
+   Navigation stays in the header; every section is still reachable from it and by scrolling. */
+.s7-obj, .s7-rail { display: none !important; }
