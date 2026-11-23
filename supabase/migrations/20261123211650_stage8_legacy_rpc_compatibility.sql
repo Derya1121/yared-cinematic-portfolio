@@ -46,7 +46,7 @@ end $$;
 create or replace function public.create_feedback_v1(p jsonb,p_ip_hash text default null,p_client_key text default null)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare
- v_name text:=nullif(btrim(coalesce(p->>'name','')),''); v_email text:=nullif(lower(btrim(coalesce(p->>'email','')),'');
+ v_name text:=nullif(btrim(coalesce(p->>'name','')),''); v_email text:=nullif(lower(btrim(coalesce(p->>'email',''))),'');
  v_cat text:=btrim(coalesce(p->>'category','')); v_msg text:=btrim(coalesce(p->>'message',''));
  v_rating int:=coalesce(nullif(p->>'rating','')::int,5); v_ref text; v_id uuid; v_existing public.feedback; i int:=0;
 begin
