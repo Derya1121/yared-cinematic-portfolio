@@ -33,8 +33,10 @@
 .s8-demo:focus-visible { outline: 2px solid var(--gold2); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .s8-card, .s8-submit { transition: none !important; } }
 
-/* Approved portrait photographs. The seated photo is landscape and the frames are 4:5, so it is framed on the face and
-   raised hand; the formal photo keeps the head in view. Selectors match only these two files, so a portrait later
-   chosen in the CMS (which replaces the src) is framed as before. */
-.portrait-frame img[src$="portrait-seated.jpg"], .s7-fig-card img[src$="portrait-seated.jpg"] { object-position: 40% center; }
+/* Approved portrait photographs (real files, never altered). Hero: seated in black chair (portrait-chair.jpg, 3:4).
+   Profile scene: gold office, lifting sunglasses (portrait-gold.jpg, landscape, framed on face and hand).
+   About: formal dark suit (portrait-formal.jpg). Selectors match only these files, so a portrait later chosen in
+   the CMS (which replaces the src) is framed as before. */
+.portrait-frame img[src$="portrait-chair.jpg"] { object-position: center 10%; }
+.s7-fig-card img[src$="portrait-gold.jpg"] { object-position: 40% center; }
 .s7-fig-card img[src$="portrait-formal.jpg"] { object-position: center 12%; }
