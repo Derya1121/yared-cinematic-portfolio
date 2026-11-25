@@ -32,3 +32,9 @@
 .s8-demo { display: inline-block; margin-top: 10px; color: var(--a1, var(--gold)); font-weight: 700; font-size: 13px; text-decoration: none; border-bottom: 1px solid currentColor; }
 .s8-demo:focus-visible { outline: 2px solid var(--gold2); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .s8-card, .s8-submit { transition: none !important; } }
+
+/* Approved portrait photographs. The seated photo is landscape and the frames are 4:5, so it is framed on the face and
+   raised hand; the formal photo keeps the head in view. Selectors match only these two files, so a portrait later
+   chosen in the CMS (which replaces the src) is framed as before. */
+.portrait-frame img[src$="portrait-seated.jpg"], .s7-fig-card img[src$="portrait-seated.jpg"] { object-position: 40% center; }
+.s7-fig-card img[src$="portrait-formal.jpg"] { object-position: center 12%; }
