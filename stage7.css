@@ -354,3 +354,50 @@ html.lite .project-card .project-art, html.lite .s7-fig-card { box-shadow: 0 20p
   .project-card, .project-card.reveal, .project-card.reveal.is-visible { transform: none; }
   .s7-plane, .project-art .art-orb, .project-art .art-word, .project-art .art-symbol, .project-art .rent-window, .project-art .pulse-line { translate: none; }
 }
+
+/* Project gallery refinement: cinematic slide-in, smooth cover motion, no reel progress rule. */
+.s7-reel-bar { display: none !important; }
+.s7-reel-meta { gap: 0; margin-bottom: 18px; }
+.s7-reel-track { scroll-behavior: smooth; }
+.s7-reel-track .project-card {
+  transition:
+    transform 900ms cubic-bezier(.22,.68,0,1),
+    opacity 650ms ease,
+    filter 700ms ease;
+  will-change: transform;
+}
+.s7-reel-track .project-art {
+  overflow: hidden;
+  transform: translateZ(0);
+}
+.s7-reel-track .project-art .project-cover {
+  backface-visibility: hidden;
+  transform: scale(1.015);
+  transition:
+    transform 1.35s cubic-bezier(.2,.72,.18,1),
+    filter 900ms ease,
+    opacity 700ms ease;
+}
+.s7-reel-track .project-card:hover .project-art .project-cover,
+.s7-reel-track .project-card:focus-within .project-art .project-cover {
+  transform: scale(1.065);
+  filter: saturate(1.12) contrast(1.025);
+}
+.s7-reel-track .project-meta,
+.s7-reel-track .status-note {
+  transition: opacity 500ms ease, transform 650ms cubic-bezier(.2,.72,.18,1);
+}
+.s7-reel-track .project-card:hover .project-meta,
+.s7-reel-track .project-card:focus-within .project-meta {
+  transform: translateY(-3px);
+}
+@media (hover: none) {
+  .s7-reel-track .project-card:hover .project-art .project-cover { transform: scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s7-reel-track { scroll-behavior: auto; }
+  .s7-reel-track .project-card,
+  .s7-reel-track .project-art .project-cover,
+  .s7-reel-track .project-meta,
+  .s7-reel-track .status-note { transition: none !important; animation: none !important; }
+}
