@@ -78,3 +78,6 @@ html:not(.lite) .s7-intro-el.is-leave .sig-stage { animation: sigBlur 1s ease fo
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) { .sig-name { color: #e6cb8f; } }
 
 @media (prefers-reduced-motion: reduce) { .s7-intro-el { display: none !important; } html.s7-intro, html.s7-intro body { overflow: auto; } }
+
+/* Intro hidden completely (owner-approved). The markup is removed by stage7.js when html.s7-intro is not set; this is a belt-and-braces guard. */
+.s7-intro-el { display: none !important; }

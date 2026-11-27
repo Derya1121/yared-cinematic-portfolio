@@ -10,8 +10,8 @@
   <meta property="og:description" content="Building intelligent software, AI-powered systems and digital solutions.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2305060d'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='700' text-anchor='middle' fill='%23c9a86a'%3ED%3C/text%3E%3C/svg%3E">
   <script>try{if(sessionStorage.getItem('yared-intro')==='1')document.documentElement.classList.add('intro-seen')}catch(e){}</script>
-  <!-- Stage 7 intro: plays once per session, never under reduced motion, always removed by a 9.5s failsafe -->
-  <script>try{var r=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&sessionStorage.getItem('derya-s7-intro')!=='1'){r.classList.add('s7-intro');setTimeout(function(){r.classList.remove('s7-intro')},9500)}}catch(e){}</script>
+  <!-- Stage 7 intro (currently switched off, see SHOW_INTRO): plays once per session, never under reduced motion, always removed by a 9.5s failsafe -->
+  <script>try{var SHOW_INTRO=false; /* owner-approved 2026-11-27: intro hidden completely. Set true to bring the signature intro back. */var r=document.documentElement;if(SHOW_INTRO&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&sessionStorage.getItem('derya-s7-intro')!=='1'){r.classList.add('s7-intro');setTimeout(function(){r.classList.remove('s7-intro')},9500)}}catch(e){}</script>
   <script src="cms-boot.js"></script>
   <noscript><style>.s7-intro-el{display:none!important}html.s7-intro{overflow:auto!important}</style></noscript>
   <meta name="description" content="DERYA Portfolio — Founder & Technology Innovator. Building intelligent software, AI-powered systems and digital solutions.">
