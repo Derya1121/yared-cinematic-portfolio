@@ -325,6 +325,7 @@ select t.ok($q$insert into public.booking_notes (booking_id, note) select id, 'C
 select t.denied($q$insert into public.booking_notes (booking_id, note, author) select id, 'x', 'aaaaaaaa-0000-0000-0000-000000000001' from public.bookings limit 1$q$, 'H17 note author cannot be set by the client');
 select t.eq($q$select author::text from public.booking_notes$q$, 'aaaaaaaa-0000-0000-0000-000000000001', 'H18 note author is stamped server-side');
 select t.dml($q$update public.feedback set status = 'read' where category = 'idea' and name = 'Sam'$q$, 1, 'H19 owner can mark feedback read');
+select t.dml($q$update public.feedback set moderation_status = 'approved' where category = 'idea' and name = 'Sam'$q$, 1, 'H19b owner approves a review before publication');
 select t.errs($q$update public.feedback set status = 'public' $q$, '23514', 'H20 feedback has no "public" status');
 select t.ok($q$insert into public.feedback_replies (feedback_id, body) select id, 'Thanks, noted.' from public.feedback where name = 'Sam'$q$, 'H21 owner can write a private reply');
 select t.rows('select 1 from public.feedback_replies', 1, 'H22 reply stored');

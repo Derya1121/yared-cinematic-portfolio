@@ -34,6 +34,10 @@ async function newPage(browser, o) {
       const req = r.request(), u = req.url();
       if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
       if (u.includes('/rest/v1/rpc/get_public_site')) return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(o.site || SITE) });
+      if (u.includes('/rest/v1/rpc/get_available_booking_slots')) {
+        const slots = o.noSlots ? [] : [{ id: '11111111-1111-4111-8111-111111111111', starts_at: new Date(Date.now()+3*86400000).toISOString(), ends_at: new Date(Date.now()+3*86400000+1800000).toISOString(), remaining_capacity: 1 }];
+        return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(slots) });
+      }
       if (u.includes('/storage/v1/object/public/')) return r.fulfill({ status: 200, contentType: 'image/png', headers: cors, body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAH7pRJQAAAABJRU5ErkJggg==', 'base64') });
       if (u.includes('health=1')) return r.fulfill({ status: o.noHealth ? 404 : 200, contentType: 'application/json', headers: cors, body: '{"ok":true}' });
       if (u.includes('/functions/v1/track-event')) { log.beacons.push(JSON.parse(req.postData() || '{}')); return r.fulfill({ status: 202, contentType: 'application/json', headers: cors, body: '{"ok":true}' }); }
@@ -105,6 +109,10 @@ async function newPage(browser, o) {
     await page.click(f + ' button[type=submit]');
     ok(/Telegram or WhatsApp/i.test(await page.textContent(f + ' [data-s8-status]')) && log.posts.length === 0, 'booking requires an explicit Telegram or WhatsApp choice');
     await page.selectOption(f + ' [name=delivery_channel]', 'telegram');
+    const futureDay = new Date(Date.now()+3*86400000).toISOString().slice(0,10);
+    await page.fill(f + ' [name=slot_date]', futureDay);
+    await page.waitForFunction(() => document.querySelector('#s8-booking [name=slot_id]').options.length > 1);
+    await page.selectOption(f + ' [name=slot_id]', '11111111-1111-4111-8111-111111111111');
     const t0 = Date.now(); await page.click(f + ' button[type=submit]'); await page.waitForFunction(() => /DB-TEST1234/.test(document.querySelector('#s8-booking [data-s8-status]').textContent), null, { timeout: 8000 });
     ok(Date.now() - t0 >= 2500, 'submit waits out the 3 s anti-bot window instead of losing an autofilled booking');
     const st = await page.textContent(f + ' [data-s8-status]');
@@ -118,11 +126,26 @@ async function newPage(browser, o) {
   { const { page, log, ctx } = await newPage(browser, { configured: true, reduced: true, submit: { s: 503, j: { ok: false, error: 'unavailable' } } });
     await page.goto(URL_ + '#book'); await page.waitForTimeout(500);
     await page.fill('#s8-booking [name=name]', 'Abel'); await page.fill('#s8-booking [name=email]', 'abel@example.com'); await page.selectOption('#s8-booking [name=delivery_channel]', 'whatsapp'); await page.selectOption('#s8-booking [name=service]', 'other'); await page.fill('#s8-booking [name=description]', 'A description that is long enough.');
+    await page.fill('#s8-booking [name=slot_date]', new Date(Date.now()+3*86400000).toISOString().slice(0,10));
+    await page.waitForFunction(() => document.querySelector('#s8-booking [name=slot_id]').options.length > 1);
+    await page.selectOption('#s8-booking [name=slot_id]', '11111111-1111-4111-8111-111111111111');
     await page.click('#s8-booking button[type=submit]'); await page.waitForFunction(() => /Nothing was saved/.test(document.querySelector('#s8-booking [data-s8-status]').textContent), null, { timeout: 8000 });
     ok(log.posts[0]?.body.delivery_channel === 'whatsapp', 'WhatsApp choice reaches the backend unchanged');
     ok(true, 'server failure tells the visitor nothing was saved (no false success)');
     ok(await page.inputValue('#s8-booking [name=name]') === 'Abel', 'the visitor’s text is kept after a failure so they can retry');
     await ctx.close(); }
+  // ---- 3. review rating payload
+  { const { page, log, ctx } = await newPage(browser, { configured: true, reduced: true });
+    await page.goto(URL_ + '#book'); await page.waitForTimeout(500);
+    const f = '#s8-feedback';
+    await page.fill(f + ' [name=message]', 'A thoughtful and useful project experience.');
+    await page.selectOption(f + ' [name=rating]', '4');
+    const t0 = Date.now(); await page.click(f + ' button[type=submit]');
+    await page.waitForFunction(() => /DB-TEST1234/.test(document.querySelector('#s8-feedback [data-s8-status]').textContent), null, {timeout:8000});
+    ok(log.posts.some(x=>x.url.includes('submit-feedback') && x.body.rating==='4'), 'feedback submits the selected 1–5 star rating');
+    ok(Date.now()-t0>=2500, 'feedback respects the anti-bot interaction window');
+    await ctx.close(); }
+
   { const { page, ctx } = await newPage(browser, { configured: true, reduced: true, noHealth: true });
     ok(await page.$$eval('[data-s8-fields]', f => f.every(x => x.disabled)), 'forms stay disabled when the functions do not answer the health probe');
     await ctx.close(); }

@@ -14,7 +14,7 @@ type Call = { fn: string; args: Record<string, unknown> };
 
 function make(over: { env?: Record<string, string>; rpc?: (fn: string, a: any) => any; fetch?: any } = {}) {
   const calls: Call[] = []; const bg: Promise<unknown>[] = []; const fetches: { url: string; init: any }[] = [];
-  const env: Record<string, string> = { ALLOWED_ORIGINS: ORIGIN, IP_HASH_SALT: "salt-salt-salt-salt", ...over.env };
+  const env: Record<string, string> = { ALLOWED_ORIGINS: ORIGIN, IP_HASH_SALT: "test-only-ip-hash-salt-at-least-32-characters-long", ...over.env };
   const deps: Deps = {
     env: (k) => env[k], now: () => NOW,
     rpc: async (fn, args) => { calls.push({ fn, args }); return over.rpc ? over.rpc(fn, args) : { data: fn === "check_rate_limit_v1" ? true : { ok: true, duplicate: false, reference: "DB-ABCDEF12" }, error: null }; },
@@ -27,7 +27,7 @@ const post = (body: unknown, headers: Record<string, string> = {}) => new Reques
   method: "POST", headers: { origin: ORIGIN, "content-type": "application/json", "x-forwarded-for": "203.0.113.7", "user-agent": "UA-TEST", ...headers },
   body: typeof body === "string" ? body : JSON.stringify(body),
 });
-const booking = (o: Record<string, unknown> = {}) => ({ name: "Abel", email: "a@b.co", delivery_channel: "telegram", service: "website", description: "I need a website", t: NOW - 10_000, website: "", client_key: "key-12345678", ...o });
+const booking = (o: Record<string, unknown> = {}) => ({ name: "Abel", email: "a@b.co", delivery_channel: "telegram", service: "website", description: "I need a website", slot_id: "11111111-1111-4111-8111-111111111111", t: NOW - 10_000, website: "", client_key: "key-12345678", ...o });
 
 test("CORS: unlisted origin is refused; listed origin is echoed; no wildcard", async () => {
   const { deps } = make();
@@ -37,6 +37,12 @@ test("CORS: unlisted origin is refused; listed origin is echoed; no wildcard", a
   assert.equal(ok.headers.get("access-control-allow-origin"), ORIGIN);
   const none = make({ env: { ALLOWED_ORIGINS: "" } });
   assert.equal((await submitBooking(none.deps)(post(booking()))).status, 403);
+});
+
+test("health probe refuses to go live without a strong IP hash salt", async () => {
+  const m = make({ env: { IP_HASH_SALT: "" } });
+  const r = await submitBooking(m.deps)(new Request("https://f.example/fn?health=1", { method: "GET", headers: { origin: ORIGIN } }));
+  assert.equal(r.status, 503);
 });
 
 test("health probe: side-effect free, only for allowed origins", async () => {
@@ -102,9 +108,16 @@ test("validation errors surface as 422 with the field; database outage as 503 'n
   assert.equal(r2.status, 503); assert.notEqual(j2.saved, true); assert.equal(JSON.stringify(j2).includes("boom"), false);
 });
 
+test("public booking and feedback require valid slot and rating", async () => {
+  const b = make(); const missingSlot = await submitBooking(b.deps)(post(booking({ slot_id: "" })));
+  assert.equal(missingSlot.status, 422); assert.equal(((await missingSlot.json()) as any).field, "slot_id");
+  const f = make(); const missingRating = await submitFeedback(f.deps)(post({ category: "idea", message: "Nice site", t: NOW - 9000, website: "" }));
+  assert.equal(missingRating.status, 422); assert.equal(((await missingRating.json()) as any).field, "rating");
+});
+
 test("feedback: stored privately via RPC; bots get a silent fake success", async () => {
   const m = make({ rpc: (fn: string) => ({ data: fn === "check_rate_limit_v1" ? true : { ok: true, duplicate: false, reference: "FB-ABCDEF12" }, error: null }) });
-  const r = await submitFeedback(m.deps)(post({ category: "idea", message: "Nice site", t: NOW - 9000, website: "" }));
+  const r = await submitFeedback(m.deps)(post({ category: "idea", message: "Nice site", rating: 4, t: NOW - 9000, website: "" }));
   assert.equal(((await r.json()) as any).reference, "FB-ABCDEF12");
   assert.ok(m.calls.some((c) => c.fn === "create_feedback_v1"));
   const bot = make(); await submitFeedback(bot.deps)(post({ category: "idea", message: "buy pills", t: NOW - 9000, website: "x" }));

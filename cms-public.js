@@ -120,7 +120,7 @@
   function rid() { var a = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(a); return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
   var MSG = {
     name: 'Please enter your name.', delivery_channel: 'Choose Telegram or WhatsApp for the booking notification.', email: 'That email address does not look right.', whatsapp: 'Use international format, e.g. +251912345678.',
-    service: 'Please choose a service.', description: 'Please describe what you need (at least 10 characters).', contact_required: 'Add an email or a WhatsApp number so I can reply.',
+    service: 'Please choose a service.', slot_id: 'Choose an available date and time.', slot_unavailable: 'That time was just booked. Please choose another slot.', rating: 'Choose a rating from 1 to 5.', description: 'Please describe what you need (at least 10 characters).', contact_required: 'Add an email or a WhatsApp number so I can reply.',
     message: 'Please write a message (at least 5 characters).', category: 'Please choose a topic.', budget: 'Please pick a budget option.'
   };
   function setupForm(form, fn, kind) {
@@ -130,13 +130,32 @@
       if (!j || j.ok !== true) return;
       fields.disabled = false; form.classList.add('is-live');
       state.lastChild.textContent = ' OPEN';
-      note.textContent = kind === 'booking' ? 'Requests are saved to a private inbox and answered personally.' : 'Feedback is private. It is stored for the owner only and never shown on this site.';
+      note.textContent = kind === 'booking' ? 'Choose an available appointment time. Your request is saved for owner approval.' : 'Your rating and review are saved privately and will appear publicly only after owner approval.';
       if (kind === 'booking') {
         var card = q('#booking-preview-title'); card = card && card.closest('.capability-card');
         if (card) { var s = q('.capability-status', card); if (s && s.lastChild) s.lastChild.textContent = ' OPEN'; var p = card.querySelectorAll('p')[1]; if (p) p.textContent = 'Booking is open: use the form below. Requests are saved to a private inbox.'; }
       }
     }).catch(function () { /* stays NOT LIVE */ });
     form.addEventListener('focusin', function () { if (!firstTouch) firstTouch = Date.now(); });
+    if (kind === 'booking') {
+      var dateField = form.elements.slot_date, serviceField = form.elements.service, slotField = form.elements.slot_id;
+      if (dateField) dateField.min = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,10);
+      function loadSlots() {
+        var day = dateField && dateField.value, service = serviceField && serviceField.value;
+        slotField.replaceChildren(new Option(day && service ? 'Loading available times…' : 'Choose a date and service first',''));
+        if (!day || !service) return;
+        var parts = day.split('-').map(Number), from = new Date(parts[0],parts[1]-1,parts[2]), to = new Date(parts[0],parts[1]-1,parts[2]+1);
+        fetch(BASE + '/rest/v1/rpc/get_available_booking_slots', {method:'POST',headers:{apikey:KEY,'content-type':'application/json'},body:JSON.stringify({p_from:from.toISOString(),p_to:to.toISOString(),p_service:service})})
+          .then(function(r){if(!r.ok)throw new Error('Availability unavailable');return r.json();})
+          .then(function(rows){
+            slotField.replaceChildren(new Option(rows.length ? 'Choose an available time' : 'No available times — choose another date',''));
+            rows.forEach(function(slot){var label=new Date(slot.starts_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});slotField.add(new Option(label,slot.id));});
+          })
+          .catch(function(){slotField.replaceChildren(new Option('Could not load availability — try again',''));});
+      }
+      if (dateField) dateField.addEventListener('change',loadSlots);
+      if (serviceField) serviceField.addEventListener('change',loadSlots);
+    }
     form.addEventListener('submit', function (e) {
       e.preventDefault(); if (fields.disabled || btn.disabled) return;
       var d = {}; qa('input, select, textarea', form).forEach(function (el) { if (el.name) d[el.name] = el.value.trim(); });
@@ -145,8 +164,8 @@
         if (!d.name) err = 'name'; else if (d.delivery_channel !== 'telegram' && d.delivery_channel !== 'whatsapp') err = 'delivery_channel'; else if (!d.email && !d.whatsapp) err = 'contact_required';
         else if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) err = 'email';
         else if (d.whatsapp && !/^\+[1-9][0-9\s().-]{7,18}$/.test(d.whatsapp)) err = 'whatsapp';
-        else if (!d.service) err = 'service'; else if (d.description.length < 10) err = 'description';
-      } else if (d.message.length < 5) err = 'message';
+        else if (!d.service) err = 'service'; else if (!d.slot_id) err = 'slot_id'; else if (d.description.length < 10) err = 'description';
+      } else if (!['1','2','3','4','5'].includes(d.rating)) err = 'rating'; else if (d.message.length < 5) err = 'message';
       if (err) { bad = err === 'contact_required' ? 'email' : err; status.textContent = MSG[err]; status.className = 's8-status is-error'; var f = form.elements[bad]; if (f && f.focus) f.focus(); return; }
       btn.disabled = true; status.className = 's8-status'; status.textContent = 'Sending…';
       // The server treats a form completed in under ~3 s as automated. Autofill can beat that, so wait it out.
@@ -158,7 +177,7 @@
           .then(function (o) {
             if (o.s === 200 && o.j && o.j.saved) {
               status.className = 's8-status is-ok';
-              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' Your request is saved. I will reply using your contact details.' : ' Thank you.');
+              status.textContent = (o.j.duplicate ? 'This was already saved. ' : 'Saved. ') + 'Your reference is ' + o.j.reference + '.' + (kind === 'booking' ? ' Your request is saved for confirmation.' : ' Thank you. Your review remains private until approved.');
               form.reset(); key = rid(); firstTouch = 0;
             } else if (o.s === 422) {
               status.className = 's8-status is-error'; status.textContent = MSG[o.j.reason === 'contact_required' ? 'contact_required' : o.j.field] || 'Please check the form and try again.';
@@ -179,11 +198,27 @@
   var bf = q('#s8-booking'), ff = q('#s8-feedback');
   if (bf) setupForm(bf, 'submit-booking', 'booking');
   if (ff) setupForm(ff, 'submit-feedback', 'feedback');
+  function syncTestimonials(list) {
+    var section = q('#s8-reviews'), root = q('#s8-reviews-list');
+    if (!section || !root) return;
+    root.replaceChildren();
+    if (!Array.isArray(list) || !list.length) { section.hidden = true; return; }
+    list.forEach(function (item) {
+      var card = doc.createElement('article'); card.className = 's8-review-card';
+      var stars = doc.createElement('p'); stars.className = 's8-review-stars'; stars.textContent = '★'.repeat(Math.max(0, Math.min(5, Number(item.rating) || 0)));
+      var quote = doc.createElement('blockquote'); quote.textContent = item.quote || '';
+      var author = doc.createElement('p'); author.className = 's8-review-author'; author.textContent = item.author_name || 'Client';
+      var role = doc.createElement('small'); role.textContent = item.author_role || '';
+      card.appendChild(stars); card.appendChild(quote); card.appendChild(author); card.appendChild(role); root.appendChild(card);
+    });
+    section.hidden = false;
+  }
   fetch(BASE + '/rest/v1/rpc/get_public_site', { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: '{}' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (site) {
       if (!site || typeof site !== 'object') return;
       if (site.content && typeof site.content === 'object') applyContent(site.content);
       syncProjects(site.projects);
+      syncTestimonials(site.testimonials);
     }).catch(function () { /* the static Stage 7 page stays exactly as it is */ });
 })();

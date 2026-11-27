@@ -10,7 +10,7 @@ const json = (r, b, s = 200) => r.fulfill({ status: s, contentType: 'application
 
 async function open(browser, { configured, adminRows, bookings }) {
   const ctx = await browser.newContext(); const page = await ctx.newPage(); const log = { reqs: [], errors: [] };
-  page.on('pageerror', e => log.errors.push(String(e)));
+  page.on('pageerror', e => log.errors.push(e.stack || String(e)));
   // The committed config.js now carries the Preview Supabase settings, so 'unconfigured' must be forced explicitly.
   if (!configured) await page.route('**/config.js', r => r.fulfill({ contentType: 'text/javascript', body: 'window.DERYA_CONFIG={}' }));
   if (configured) {

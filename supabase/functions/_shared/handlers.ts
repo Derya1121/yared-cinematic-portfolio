@@ -11,12 +11,14 @@ type Handler = (req: Request) => Promise<Response>;
 async function guarded(req: Request, deps: Deps, run: (body: Record<string, unknown>, cors: Record<string, string>) => Promise<Response>): Promise<Response> {
   const cors = corsHeaders(req, deps);
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-  // Side-effect-free probe so the website can show "live" only when the function really answers.
+  // Side-effect-free probe: forms stay disabled until origin and privacy hashing are configured.
+  const saltConfigured = (deps.env("IP_HASH_SALT") ?? "").length >= 32;
   if (req.method === "GET" && new URL(req.url).searchParams.has("health") && originAllowed(req, deps)) {
-    return json({ ok: true }, 200, cors);
+    return saltConfigured ? json({ ok: true }, 200, cors) : json({ ok: false, error: "not_configured" }, 503, cors);
   }
   if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, cors);
   if (!originAllowed(req, deps)) return json({ ok: false, error: "origin_not_allowed" }, 403, cors);
+  if (!saltConfigured) return json({ ok: false, error: "not_configured" }, 503, cors);
   const body = await readJson(req);
   if (!body.ok) return json({ ok: false, error: body.error }, body.status, cors);
   try {
@@ -38,12 +40,16 @@ export function submitBooking(deps: Deps): Handler {
     if (deliveryChannel !== "telegram" && deliveryChannel !== "whatsapp") {
       return json({ ok: false, error: "invalid", field: "delivery_channel", reason: "invalid" }, 422, cors);
     }
+    const slotId = str(b.slot_id, 64);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slotId)) {
+      return json({ ok: false, error: "invalid", field: "slot_id", reason: "required" }, 422, cors);
+    }
     const ip = await ipHash(req, deps);
     if (await rateLimited(deps, `booking:${ip}`, 5, 3600)) return json({ ok: false, error: "rate_limited" }, 429, cors);
     const r = await deps.rpc("create_booking_v1", {
       p: {
         name: str(b.name, 200), business: str(b.business, 200), email: str(b.email, 300), whatsapp: str(b.whatsapp, 40), delivery_channel: deliveryChannel,
-        service: str(b.service, 40), budget: str(b.budget, 40), description: str(b.description, 4000),
+        service: str(b.service, 40), budget: str(b.budget, 40), description: str(b.description, 4000), slot_id: slotId,
       },
       p_ip_hash: ip, p_client_key: str(b.client_key, 64) || null,
     });
@@ -62,10 +68,12 @@ export function submitBooking(deps: Deps): Handler {
 export function submitFeedback(deps: Deps): Handler {
   return (req) => guarded(req, deps, async (b, cors) => {
     if (looksLikeBot(b, deps)) return json({ ok: true, saved: true, reference: "FB-00000000", duplicate: false }, 200, cors);
+    const rating = Number(b.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return json({ ok: false, error: "invalid", field: "rating", reason: "invalid" }, 422, cors);
     const ip = await ipHash(req, deps);
     if (await rateLimited(deps, `feedback:${ip}`, 5, 3600)) return json({ ok: false, error: "rate_limited" }, 429, cors);
     const r = await deps.rpc("create_feedback_v1", {
-      p: { name: str(b.name, 200), email: str(b.email, 300), category: str(b.category, 40), message: str(b.message, 4000) },
+      p: { name: str(b.name, 200), email: str(b.email, 300), category: str(b.category, 40), message: str(b.message, 4000), rating },
       p_ip_hash: ip, p_client_key: str(b.client_key, 64) || null,
     });
     if (r.error) return json({ ok: false, error: "unavailable" }, 503, cors);

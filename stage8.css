@@ -40,3 +40,11 @@
 .portrait-frame img[src$="portrait-chair.jpg"] { object-position: center 10%; }
 .s7-fig-card img[src$="portrait-gold.jpg"] { object-position: 40% center; }
 .s7-fig-card img[src$="portrait-formal.jpg"] { object-position: center 12%; }
+
+/* Stage 8.1 approved client reviews */
+.s8-reviews-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1rem}
+.s8-review-card{padding:1.5rem;border:1px solid rgba(201,168,106,.24);border-radius:18px;background:rgba(255,255,255,.035);backdrop-filter:blur(14px)}
+.s8-review-stars{color:var(--gold,#c9a86a);letter-spacing:.12em;margin:0 0 .75rem}
+.s8-review-card blockquote{margin:0 0 1.25rem;line-height:1.7;color:rgba(255,255,255,.88)}
+.s8-review-author{margin:0;font-weight:700;color:#fff}
+.s8-review-card small{color:rgba(255,255,255,.56)}

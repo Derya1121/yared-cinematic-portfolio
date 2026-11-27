@@ -197,3 +197,6 @@ html.lite .project-art { filter: none; }
 /* Calm cover (owner request): no floating 3D objects over the cover and no floating scene-dot rail at the right edge.
    Navigation stays in the header; every section is still reachable from it and by scrolling. */
 .s7-obj, .s7-rail { display: none !important; }
+
+/* Owner request: no horizontal progress line that travels across the top while scrolling. */
+.scroll-progress { display: none !important; }
