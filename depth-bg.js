@@ -76,6 +76,58 @@
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   }
 
+  // Restrained architectural layer: perspective floor lines, glass-facade mullions and side portal arches.
+  // Kept at the outer edges so the central reading and portrait areas remain clear.
+  function drawArchitecture(t) {
+    var fade = 0.72 + 0.28 * Math.sin(t * 0.00018);
+    var vanX = W * 0.5, vanY = H * 0.57;
+    ctx.save();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(201,168,106,' + (0.075 * fade).toFixed(3) + ')';
+    // Perspective floor: converging longitudinal lines and softly spaced cross-lines.
+    for (var i = -7; i <= 7; i++) {
+      var bx = vanX + i * W * 0.115;
+      ctx.beginPath(); ctx.moveTo(vanX + i * 2, vanY); ctx.lineTo(bx, H * 1.08); ctx.stroke();
+    }
+    for (var j = 1; j <= 7; j++) {
+      var p = j / 7, y = vanY + (H * 0.52) * p * p;
+      ctx.beginPath(); ctx.moveTo(W * 0.02 + p * W * 0.12, y); ctx.lineTo(W * 0.98 - p * W * 0.12, y); ctx.stroke();
+    }
+    // Tall glass-facade ribs at the perimeter, with subtle cross-bracing.
+    var sides = [W * 0.035, W * 0.12, W * 0.88, W * 0.965];
+    sides.forEach(function (x, n) {
+      var inward = x < W * 0.5 ? 1 : -1, top = H * (0.12 + (n % 2) * 0.055), bottom = H * 0.91;
+      ctx.strokeStyle = 'rgba(218,184,112,' + (0.09 * fade).toFixed(3) + ')';
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + inward * W * 0.025, bottom); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + inward * W * 0.045, top + H * 0.08); ctx.lineTo(x + inward * W * 0.07, bottom); ctx.stroke();
+      for (var k = 1; k <= 4; k++) {
+        var yy = top + (bottom - top) * k / 5;
+        ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + inward * W * 0.055, yy + H * 0.012); ctx.stroke();
+      }
+    });
+    // Architectural portal arches, cropped toward the margins like a monumental gallery.
+    [-1, 1].forEach(function (side) {
+      var cx = side < 0 ? W * 0.045 : W * 0.955;
+      var width = W * 0.16, top = H * 0.23, base = H * 0.86;
+      ctx.strokeStyle = 'rgba(220,188,125,' + (0.11 * fade).toFixed(3) + ')';
+      ctx.lineWidth = 1.15;
+      ctx.beginPath();
+      ctx.moveTo(cx - side * width * 0.5, base);
+      ctx.lineTo(cx - side * width * 0.5, top + width * 0.48);
+      ctx.quadraticCurveTo(cx, top - width * 0.42, cx + side * width * 0.5, top + width * 0.48);
+      ctx.lineTo(cx + side * width * 0.5, base);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(201,168,106,' + (0.045 * fade).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.moveTo(cx - side * width * 0.34, base);
+      ctx.lineTo(cx - side * width * 0.34, top + width * 0.5);
+      ctx.quadraticCurveTo(cx, top - width * 0.24, cx + side * width * 0.34, top + width * 0.5);
+      ctx.lineTo(cx + side * width * 0.34, base);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
   function draw(t, dt) {
     ctx.clearRect(0, 0, W, H);
     // atmospheric light: a warm pool that travels down the page as you scroll
@@ -84,6 +136,7 @@
     var g = ctx.createRadialGradient(gx + px * 40, gy + py * 30, 0, gx, gy, gr);
     g.addColorStop(0, 'rgba(201,168,106,.10)'); g.addColorStop(.5, 'rgba(160,120,50,.04)'); g.addColorStop(1, 'rgba(201,168,106,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    drawArchitecture(t);
     for (var i = 0; i < items.length; i++) drawSolid(items[i], t);
     ctx.globalCompositeOperation = 'lighter';
     for (var k = 0; k < motes.length; k++) {
